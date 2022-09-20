@@ -43,6 +43,7 @@ print(nb_data_cols)
 
 combined_dataframe=pandas.DataFrame()
 
+measurements_dict = {};
 for file in os.listdir(MATRIX_LOCATION):
     if file.endswith(".csv"):
         matrix_file = pandas.read_csv(os.path.join(MATRIX_LOCATION, file), header=None)
@@ -56,7 +57,7 @@ for file in os.listdir(MATRIX_LOCATION):
         time = split_name[2]
 
         # print("matrix: ", np_matrix.shape)
-
+        measurements_dict.update({pruned_name:{"location": location, "date": date, "time": time, "matrix": np_matrix}})
 
 
         #checking whether everything sums to 1 (or something negative)
@@ -80,3 +81,4 @@ plt.xlabel("log10(y_sim)")
 plt.legend()
 plt.title("Simulated observations")
 plt.show()
+
