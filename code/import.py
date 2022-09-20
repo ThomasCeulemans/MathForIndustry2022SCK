@@ -2,7 +2,7 @@ import pandas
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.sparse as sp
+import scipy.optimize as opt
 import datetime
 
 MATRIX_LOCATION = "./../data/srs_csv_files/"
@@ -131,12 +131,44 @@ print("size giant matrix: ", giant_matrix.shape)
 #we do not actually want to deal with the negative values, nor with rows of only zeros (as some gap in the data exists temporally)
 pruned_giant_matrix = giant_matrix[(giant_matrix.min(axis=1)>=0.0) & (giant_matrix.max(axis=1)>0.0)]
 print("size pruned matrix: ", pruned_giant_matrix.shape)
+print("nb cols pruned matrix: ", pruned_giant_matrix.shape[0])
+print("nb zero cols pruned matrix: ", pruned_giant_matrix[:, (pruned_giant_matrix.max(axis=0)==0.0)].shape)
+#also stripping away all zero columns?, as they cannot be computed
+#FIXME: add some way of mapping these indicies to the original indices
+# pruned_giant_matrix = pruned_giant_matrix[:, (pruned_giant_matrix.max(axis=0)>0.0)]
+nb_rows_pruned_matrix = pruned_giant_matrix.shape[0]
+nb_cols_pruned_matrix = pruned_giant_matrix.shape[1]
+print("nb cols pruned matrix: ", nb_cols_pruned_matrix)
+_, singular_values, _ =np.linalg.svd(pruned_giant_matrix)
+print
+
 #TODO: prune zero columns?, as these cannot be determineds
 print(scalings)
 print(sources)
+
+
+
+def ln_y_squared(xval_array):
+    lny = np.log(pruned_giant_matrix @ xval_array)
+    return lny.T @ lny
 
 plt.hist(np.log10(results), bins=50)
 plt.xlabel("log10(y_sim)")
 plt.legend()
 plt.title("Simulated observations")
+# plt.show()
+
+print(ln_y_squared(np.ones((nb_cols_pruned_matrix,1))))
+
+#just least squares without any constraints
+# print(np.ones((nb_cols_pruned_matrix,1)).shape)
+solx=np.linalg.lstsq(pruned_giant_matrix, np.ones((nb_rows_pruned_matrix,1)))[0]
+print(solx)
+plt.figure(1)
+plt.plot(solx[:,0])
 plt.show()
+
+#initial guess is evidently the starting data for x
+#only this gradient thing requires way too much memory, so a sparse method is required
+solx = opt.minimize(ln_y_squared, np.kron(np_sources, np.ones((N_COLS,1))), method='CG' )
+print("Found solution: ", solx)
