@@ -63,10 +63,10 @@ nb_data_cols=np.size(np_sources)
 print(nb_data_cols)
 
 combined_dataframe=pandas.DataFrame()
-
 giant_matrix = np.zeros((N_DETECTIONS, N_SOURCES*N_COLS))
+measurements_dict = {};
 
-index = 0
+
 
 for file in os.listdir(MATRIX_LOCATION):
     if file.endswith(".csv"):
@@ -82,42 +82,50 @@ for file in os.listdir(MATRIX_LOCATION):
 
         #consistent index, starting at zero
         dayofyear = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday - 1
-        print(dayofyear)
+        # print(dayofyear)
 
         # print("matrix: ", np_matrix.shape)
+        measurements_dict.update({pruned_name:{"location": location, "date": date, "time": time, "matrix": np_matrix}})
 
+timesort_dict = dict(sorted(measurements_dict.items(), key = lambda item: item[1]["time"]))
+locationsort_dict = dict(sorted(timesort_dict.items(), key = lambda item: item[1]["location"]))
+datesort_dict = dict(sorted(locationsort_dict.items(), key = lambda item: item[1]["date"]))
+# print(locationsort_dict)
 
+index = 0
+for (dictel, val) in datesort_dict.items(): # dict(sorted(measurements_dict.items(), key=lambda item: item["date"])):
+    print(dictel)
+    # print(val["location"])
 
-        #checking whether everything sums to 1 (or something negative)
-        # print(np.matmul(np_matrix.T, np_sources))
-        result=np.sum(np.matmul(np_matrix.T, np_sources))
-        # print()
-        results[index]=result
+    np_matrix = val["matrix"]
+    #checking whether everything sums to 1 (or something negative)
+    # print(np.matmul(np_matrix.T, np_sources))
+    result=np.sum(np.matmul(np_matrix.T, np_sources))
+    # print()
+    results[index]=result
 
+    #setting up some larger matrix for eventually filling in the combined matrix
+    largermat=np.zeros((N_SOURCES, N_COLS))
+    #flatten the transposed matrix
 
-        largermat=np.zeros((N_SOURCES, N_COLS))
-        #flatten the transposed matrix
+    date=dayofyear
 
-        date=dayofyear
+    #and putting it in in the correct place?
+    largermat[:, date:date+LIMIT_BACKWARD_TIME]=np_matrix
+    print(largermat.shape)
+    flatmat=largermat.flatten()
+    print(flatmat.shape)
 
-        #and putting it in in the correct place?
-        largermat[:, date:date+LIMIT_BACKWARD_TIME]=np_matrix
-        print(largermat.shape)
-        flatmat=largermat.flatten()
-        print(flatmat.shape)
+    #and put it into a giant matrix
+    giant_matrix[index, :]=flatmat
+    #hmm, did I correctly treat observations on the same day; probably yes, as the observation will be put on another row
 
-        #and put it into a giant matrix
-        giant_matrix[index, :]=flatmat
-        #hmm, did I correctly treat observations on the same day; probably yes, as the observation will be put on another row
+    # print(flatmat)
 
-        print(flatmat)
+    index+=1
+    # print(os.path.join(MATRIX_LOCATION, file))
+    # print(matrix_file)
 
-        index+=1
-        # print(os.path.join(MATRIX_LOCATION, file))
-        # print(matrix_file)
-
-
-        #TODO do something with the data
 print("size giant matrix: ", giant_matrix.shape)
 # print("giant matrix: ", giant_matrix)
 #we do not actually want to deal with the negative values, nor with rows of only zeros (as some gap in the data exists temporally)
