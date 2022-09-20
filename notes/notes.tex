@@ -1,0 +1,165 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb, dsfont, physics}
+\usepackage[margin=1.5cm]{geometry}
+
+
+\title{Notes}
+\author{SCK team}
+\date{}
+
+\begin{document}
+    \maketitle
+
+\section{Notation}
+\begin{itemize}
+    \item Average emission per source: $x_1,\dots,x_m$ where $m = 200$.
+    \item Measured concentrations $y_1,\dots,y_n$ where $n = 4636$. These are consecutive measurements for several measurement stations. 
+    \item $M_{i,(j,\Delta)}$ is a block in the sensitivity matrix $M$ that represents the contribution of $x_j$ from $\Delta - 1$ days ago to the observed concentration $y_i$.
+    \item Scaling factors $s_1,\dots,s_m$ (in \texttt{scalings.csv}). These are put in a diagonal matrix $S$.
+    \item $\vb{1}_q = [1\,\, \dots\,\, 1]^T \in \mathbb{R}^q$ is the constant vector consisting of only ones.
+    \item $\otimes$ is the Kronecker product. In particular,
+        $$
+        \underbrace{
+        \begin{bmatrix}
+            a_1 \\
+            \vdots \\
+            a_p
+        \end{bmatrix}
+        }_{\in \mathbb{R}^{p}}
+        \otimes 
+        \underbrace{
+        \begin{bmatrix}
+            1 \\
+            \vdots \\
+            1
+        \end{bmatrix}
+        }_{\in \mathbb{R}^{q}}
+        =
+        \underbrace{
+        \begin{bmatrix}
+            a_1 \\
+            \vdots \\
+            a_1 \\
+            a_2 \\
+            \vdots \\
+            a_2 \\
+            \vdots \\
+            a_p
+        \end{bmatrix}
+        }_{\in \mathbb{R}^{pq}}
+        .$$
+\end{itemize}
+
+\section{Model}
+With $n=1,\dots,4636$ and $m = 1,\dots,200$, the initial model is
+$$
+y_i \approx
+\hat{y}_i = \sum_{j=1}^m \sum_{\Delta = 1}^{15}  M_{i,(j,\Delta)} \frac{x_{j}}{s_j}
+.$$
+That is, for each emission source $j$, we simulate the contribution of 15 days, and add this together for all $j$. A matrix formulation of this reads
+
+\begin{align*}
+\begin{bmatrix}
+    \hat{y}_1 \\ 
+    \vdots \\
+    \hat{y}_{m}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+    M_{1,(1,1)} & M_{1,(1,2)} & \cdots & M_{1,(n,15)} \\
+    \vdots & \vdots & & \vdots \\
+    M_{m,(1,1)} & M_{m,(1,2)} & \cdots & M_{m,(n,15)} \\
+\end{bmatrix}
+\begin{bmatrix}
+    s_1^{-1} x_1\\
+    \vdots \\
+    s_1^{-1} x_1 \\
+    s_2^{-1} x_2 \\
+    \vdots \\
+    s_n^{-1} x_n
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+    M_{1,(1,1)} & M_{1,(1,2)} & \cdots & M_{1,(n,15)} \\
+    \vdots & \vdots & & \vdots \\
+    M_{m,(1,1)} & M_{m,(1,2)} & \cdots & M_{m,(n,15)} \\
+\end{bmatrix}
+\left( 
+     \begin{bmatrix}
+        s_1 & & \\
+         & \ddots & \\
+        & & s_n
+     \end{bmatrix}^{-1}
+     \begin{bmatrix}
+        x_1 \\
+        \vdots \\
+        x_n
+     \end{bmatrix}
+     \otimes \vb{1}_{15}
+\right)
+\end{align*}
+where $s_i$ are the scalings.
+
+Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is constant.
+
+With this formulation, the predicted concentration in station $y_i$ is 
+$$
+        \hat{y}_i
+    =
+    \begin{bmatrix}
+        \cdots & M_{1,(1,1)} & \dots & M_{1,(1,15)} & 0 & \dots & M_{1,(2,1)} & \dots & M_{1,(2,15)} & \dots
+    \end{bmatrix}
+    (S^{-1} x \otimes \vb{1}_{365})
+.
+$$
+
+Now assume that in each station, there is one observation per day, named $y_{kt}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then 
+$$
+\begin{bmatrix}
+    \hat{y}_{1,1} \\
+    \hat{y}_{1,2} \\
+    \vdots \\
+    \hat{y}_{2,1} \\ 
+    \vdots \\
+    \hat{y}_{K,365}
+\end{bmatrix}
+=
+\underbrace{
+\begin{bmatrix}
+    M_{(1,1), (1,1)} & M_{(1,1), (1,2)} & \cdots & M_{(1,1),(1,15)} & 0 & \cdots & \cdots & M_{(1,1), (2,1)} & \cdots & 0 \\
+    0 & M_{(1,2), (1,1)} & \cdots & M_{(1,2), (1,14)} & M_{(1,2), (1,15)} & 0 & \cdots & 0 & \cdots & 0 \\
+    \vdots & \vdots & & \vdots & \vdots & \vdots & & \vdots & & \vdots \\
+    M_{(2,1), (1,1)} & M_{(2,1), (1,2)} & \cdots & M_{(2,1),(1,15)} & 0 & \cdots & \cdots & M_{(2,1), (2,1)} & \cdots & 0 \\
+    \vdots \\
+    \vdots
+\end{bmatrix}
+}_{ := M_{shift}}
+\tilde{x}
+$$
+where 
+$$
+\tilde{x} := S^{-1} x \otimes \vb{1}_{365}
+=
+\begin{bmatrix}
+    s_1^{-1} x_1 \\
+    \vdots \\
+    s_1^{-1} x_1 \\ 
+    s_2^{-1} x_2 \\
+    \vdots \\ 
+    s_m^{-1} x_m
+\end{bmatrix}
+.$$
+If we weigh each day and each emission source by some factor, we get
+$$
+\hat{y} = M_{shift} W (S^{-1} x \otimes \vb{1}_{365})
+$$
+where $W$ is a diagonal matrix containing the weights.
+If $W$ is what we should be looking for, then we can use well-known numerical techniques for solving linear matrix equations. For theoretical purposes, we describe the problem as a large linear system involving Kronecker products.
+Writing $W = \mathrm{diag}(w)$ for some vector $w$, the above can be reformulated as a liner operation applied to $w$ as follows:
+$$
+\hat{y} = ((S^{-1} x \otimes \vb{1}_{365})^T \otimes M_{shift}) \mathrm{vec}(\mathrm{diag}\, w)
+$$
+where $\mathrm{vec} \circ \mathrm{diag}$ is a constant linear map that can be inferred from the dimensions of the problem.
+
+\end{document}
+
