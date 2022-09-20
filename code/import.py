@@ -172,3 +172,9 @@ plt.show()
 #only this gradient thing requires way too much memory, so a sparse method is required
 solx = opt.minimize(ln_y_squared, np.kron(np_sources, np.ones((N_COLS,1))), method='CG' )
 print("Found solution: ", solx)
+# Caculate metrics
+MB = np.mean(results[np.where(results>=0)])-1 # mean Model Bias
+FB = 2*((1-np.mean(results[np.where(results>=0)]))/(1+np.mean(results[np.where(results>=0)]))) # Fractional Bias
+MG = np.exp(-np.mean(np.log(results[np.where(results>=0)]))) # Geometric Mean Bias
+FAC2 = np.size(np.where((results < 2) & (results > .5)))/np.size(np.where(results>=0)) # Fraction of the data where the model is within a 
+#log10Error = np.mean(np.log10(results[np.where(results>=0)]))
