@@ -1,11 +1,13 @@
 \documentclass{article}
-\usepackage{amsmath, amssymb, dsfont, physics}
+\usepackage{amsmath, amssymb, dsfont, physics, hyperref, cleveref}
 \usepackage[margin=1.5cm]{geometry}
-
+\usepackage{biblatex}
 
 \title{Notes}
 \author{SCK team}
 \date{}
+
+\addbibresource{library.bib}
 
 \begin{document}
     \maketitle
@@ -48,27 +50,29 @@
         \end{bmatrix}
         }_{\in \mathbb{R}^{pq}}
         .$$
+        A standard rule of thumb in numerical linear algebra is that the Kronecker product serves a mostly theoretical purpose and is rarely calculated explicitly. See, e.g. \cite[Section 12.3]{Golub2013}.
 \end{itemize}
 
 \section{Model}
+\subsection{Initial model}
 With $n=1,\dots,4636$ and $m = 1,\dots,200$, the initial model is
 $$
 y_i \approx
 \hat{y}_i = \sum_{j=1}^m \sum_{\Delta = 1}^{15}  M_{i,(j,\Delta)} \frac{x_{j}}{s_j}
 .$$
-That is, for each emission source $j$, we simulate the contribution of 15 days, and add this together for all $j$. A matrix formulation of this reads
-
-\begin{align*}
+That is, for each emission source $j$, we simulate the contribution of 15 days, and add this together for all $j$. A matrix formulation of this reads as follows:
+\begin{align}
+    \label{eq: initial model concise} 
 \begin{bmatrix}
     \hat{y}_1 \\ 
     \vdots \\
-    \hat{y}_{m}
+    \hat{y}_{n}
 \end{bmatrix}
 &=
 \begin{bmatrix}
-    M_{1,(1,1)} & M_{1,(1,2)} & \cdots & M_{1,(n,15)} \\
+    M_{1,(1,1)} & M_{1,(1,2)} & \cdots & M_{1,(m,15)} \\
     \vdots & \vdots & & \vdots \\
-    M_{m,(1,1)} & M_{m,(1,2)} & \cdots & M_{m,(n,15)} \\
+    M_{n,(1,1)} & M_{n,(1,2)} & \cdots & M_{n,(m,15)} \\
 \end{bmatrix}
 \begin{bmatrix}
     s_1^{-1} x_1\\
@@ -76,8 +80,9 @@ That is, for each emission source $j$, we simulate the contribution of 15 days, 
     s_1^{-1} x_1 \\
     s_2^{-1} x_2 \\
     \vdots \\
-    s_n^{-1} x_n
-\end{bmatrix} \\
+    s_n^{-1} x_m
+\end{bmatrix} 
+\\
 &=
 \begin{bmatrix}
     M_{1,(1,1)} & M_{1,(1,2)} & \cdots & M_{1,(n,15)} \\
@@ -97,24 +102,26 @@ That is, for each emission source $j$, we simulate the contribution of 15 days, 
      \end{bmatrix}
      \otimes \vb{1}_{15}
 \right)
-\end{align*}
-where $s_i$ are the scalings.
+\nonumber
+.\end{align}
 
-Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is constant.
+Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x}_{365} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}_{365}$ consists of $m = 200$ blocks, each of which is a constant vector of length $365$.
 
-With this formulation, the predicted concentration in station $y_i$ is 
+We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}_{365}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have a linear relationship that looks something like this:
 $$
         \hat{y}_i
     =
     \begin{bmatrix}
-        \cdots & M_{1,(1,1)} & \dots & M_{1,(1,15)} & 0 & \dots & M_{1,(2,1)} & \dots & M_{1,(2,15)} & \dots
+        \cdots & M_{i,(1,1)} & \dots & M_{i,(1,15)} & 0 & \dots & M_{i,(2,1)} & \dots & M_{i,(2,15)} & \dots
     \end{bmatrix}
     (S^{-1} x \otimes \vb{1}_{365})
 .
 $$
+The presence of zeros in the matrix indicates that emissions from the distant past do not contribute to the observed concentrations.
 
-Now assume that in each station, there is one observation per day, named $y_{kt}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then 
-$$
+Now assume that in each station, there is one observation per day, named $y_{kt}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then the full system reads as follows:
+\begin{equation}
+    \label{eq: initial model 365 days}
 \begin{bmatrix}
     \hat{y}_{1,1} \\
     \hat{y}_{1,2} \\
@@ -134,11 +141,11 @@ $$
     \vdots
 \end{bmatrix}
 }_{ := M_{shift}}
-\tilde{x}
-$$
+\tilde{x}_{365}
+\end{equation}
 where 
 $$
-\tilde{x} := S^{-1} x \otimes \vb{1}_{365}
+\tilde{x}_{365} := S^{-1} x \otimes \vb{1}_{365}
 =
 \begin{bmatrix}
     s_1^{-1} x_1 \\
@@ -149,17 +156,59 @@ $$
     s_m^{-1} x_m
 \end{bmatrix}
 .$$
-If we weigh each day and each emission source by some factor, we get
+
+We could reorganise the vector $\tilde{x}_{365}$ to the transposed expression $\vb{1}_{365} \otimes (S^{-1} x)$, which is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. This has the effect of permuting the rows and columns of $M_{shift}$. A permutation of the variables gives a model that is essentially the same as \cref{eq: initial model 365 days} but may have advantages when it comes to implementation or computational efficiency. We will not consider this.
+
+\subsection{Model with time-dependent correction to the emissions}
+If we weigh each day and each emission source by some factor, we are applying a transformation
 $$
+\begin{bmatrix}
+    s_1^{-1} x_1 \\
+    \vdots \\
+    s_1^{-1} x_1 \\ 
+    s_2^{-1} x_2 \\
+    \vdots \\ 
+    s_m^{-1} x_m
+\end{bmatrix}
+\mapsto
+\begin{bmatrix}
+    w_{1,1} s_1^{-1} x_1 \\
+    \vdots \\
+    w_{1,365} s_1^{-1} x_1 \\ 
+    w_{2,1} s_2^{-1} x_2 \\
+    \vdots \\ 
+    w_{m, 365} s_m^{-1} x_m
+\end{bmatrix}
+$$
+which can be written concisely as 
+$$
+W (S^{-1} x \otimes \vb{1}_{365})
+\quad\text{where}\quad 
+W = \begin{bmatrix}
+    w_{1,1} & 0 & \cdots & 0 \\
+    0 & w_{1,2} & \cdots & 0 \\
+    \vdots & \vdots & \ddots & 0 \\
+    0 & 0 & \cdots & w_{m, 365}
+\end{bmatrix}
+.$$
+Using this weighted vector of emissions instead of $\tilde{x}_{365}$ in \cref{eq: initial model 365 days} gives
+\begin{equation}
+    \label{eq: time-evolving model concise}
 \hat{y} = M_{shift} W (S^{-1} x \otimes \vb{1}_{365})
+.\end{equation}
+In this expression, the unknown is $W$ and should be fit to the data. 
+There are a plethora of numerical techniques for solving linear equations where the unknown is a matrix.
+In the following, we provide a theoretical description of a system that can be solved for $W$.
+
+We can put constraints on $W$ of the form $W \in \mathcal{W}$, where $\mathcal{W}$ is some set of constrained diagonal matrices. Suppose we have a parametrisation $\Gamma: \mathbb{R}^{k} \rightarrow \mathcal{W}, u \mapsto \Gamma(u)$. 
+In this case, \cref{eq: time-evolving model concise} can be reformulated as a linear operation applied to $\Gamma(u)$ as follows:
 $$
-where $W$ is a diagonal matrix containing the weights.
-If $W$ is what we should be looking for, then we can use well-known numerical techniques for solving linear matrix equations. For theoretical purposes, we describe the problem as a large linear system involving Kronecker products.
-Writing $W = \mathrm{diag}(w)$ for some vector $w$, the above can be reformulated as a liner operation applied to $w$ as follows:
-$$
-\hat{y} = ((S^{-1} x \otimes \vb{1}_{365})^T \otimes M_{shift}) \mathrm{vec}(\mathrm{diag}\, w)
-$$
-where $\mathrm{vec} \circ \mathrm{diag}$ is a constant linear map that can be inferred from the dimensions of the problem.
+\hat{y} = ((S^{-1} x \otimes \vb{1}_{365})^T \otimes M_{shift}) \mathrm{vec}\, \Gamma(u)
+.$$
+If $\Gamma$ is a linear map, the above is a linear expression in $u$. Then, the minimisation of $\norm{y - \hat{y}}^2$ can be solved using numerical linear algebra.
+
+
+\printbibliography
 
 \end{document}
 
