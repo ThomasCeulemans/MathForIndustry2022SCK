@@ -219,7 +219,7 @@ The first term measures the average logarithm of the predicted values. The secon
 \begin{proposition}
     Let $z$ be the vector obtained by applying the function $x \mapsto (\log x) / x$ to all predicted concentrations $\hat{y}_i$ corresponding to detection events. Then the gradient of $f(W)$ is the diagonal matrix
     $$
-    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left((P_{det} M_{shift})^T z \tilde{x}^T\right) + \lambda W^{-1} \log W
+    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left((P_{det} M_{shift})^T z \tilde{x}_{365}^T\right) + \lambda W^{-1} \log W
     $$
     where $\mathrm{Diag}$ is the map that sets the off-diagonal elements of a matrix to zero.
 \end{proposition}
@@ -234,7 +234,7 @@ F(t) := \log.(G(t))
 .$$
 Then 
 $$
-G(t) = \underbrace{P_{det} M_{shift} W(t) \tilde{x}_{365} = (P_{det}M_{shift} \oslash \tilde{x}^T) U}_A t
+G(t) = \underbrace{P_{det} M_{shift} W(t) \tilde{x}_{365} = (P_{det}M_{shift} \oslash \tilde{x}_{365}^T) U}_A t
 $$
 where $\oslash$ is the Kronecker product with reversed arguments, which satisfies $\mathrm{vec}(A B C) = (A \oslash C^T) \mathrm{vec} B$.
 Since $G(t)$ is linear, $F(t) = \log.(G(t))$ is easy to differentiate:
@@ -247,8 +247,8 @@ Using standard differentiation rules for the squared norm of a vector-valued fun
 \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right) = \left(\frac{\partial F}{\partial t}\right)^T F(t)
 &= A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
 &= A^T z \\
-&= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}) z \\
-&= U^T (P_{det} M_{shift})^T z \tilde{x}^T
+&= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}_{365}) z \\
+&= U^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T
 .
 \end{align*}
 Since $U$ is unitary, we have $$
@@ -256,7 +256,7 @@ Since $U$ is unitary, we have $$
 =
 U \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right)
 =
-UU^T (P_{det} M_{shift})^T z \tilde{x}^T
+UU^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T
 .$$
 The linear map $UU^T$ is simply the orthogonal projector onto the diagonal matrices, which is equivalent to $\mathrm{Diag}$.
 
