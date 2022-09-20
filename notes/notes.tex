@@ -210,24 +210,34 @@ In this expression, the unknown is $W$ and should be fit to the data.
 % If $\Gamma$ is a linear map, the above is a linear expression in $u$. Then, the minimisation of $\norm{y - \hat{y}}^2$ can be solved using numerical linear algebra.
 
 \subsection{Fitting the model}
-The indices $i = 1,\dots,n$ are partitioned as a disjoint union $\mathcal{I}_{det} \cup \mathcal{I}_{0}$ where $\mathcal{I}_0$ contains the indices of non-detection events. Let $P_{det}$ be the linear map that removes the rows of a matrix that correspond to $\mathcal{I}_0$. We can measure the accuracy as $\norm{\log.(P_{det} \hat{y})}^2$ where $\log.(\cdot)$ is the elementwise natural logarithm. The simplicity of $W$ can be measured as $\norm{\log W}^2$. If we forget about non-detections, we have the cost function 
+The indices $i = 1,\dots,n$ are partitioned as a disjoint union $\mathcal{I}_{det} \cup \mathcal{I}_{0}$ where $\mathcal{I}_0$ contains the indices of non-detection events. Let $P_{det}$ be the linear map that removes the rows of a matrix that correspond to $\mathcal{I}_0$. We can measure the accuracy as $\norm{\log.(P_{det} \hat{y})}^2$ where $\log.(\cdot)$ is the elementwise \emph{natural} logarithm. The simplicity of $W$ can be measured as $\norm{\log W}^2$. If we forget about non-detections, we have the cost function 
 $$
 \min_{W \text{ diagonal}} f(W) =
-\frac{1}{2}\norm{\log.(P_{det} M_{shift} W(t) \tilde{x}_{365})}^2 + \frac{1}{2}\lambda \norm{\log W}^2
+\frac{1}{2}\norm{\log.(P_{det} M_{shift} W \tilde{x}_{365})}^2 + \frac{1}{2}\lambda \norm{\log W}^2
 .$$
-The first term measures the average logarithm of the predicted values. The second term measures the average logarithm of the weights.
+The first term measures the average logarithm of the predicted values $\hat{y}$ (detection events only). The second term measures the average logarithm of the weights.
 \begin{proposition}
-    Let $z$ be the vector obtained by applying the function $x \mapsto (\log x) / x$ to all predicted concentrations $\hat{y}_i$ corresponding to detection events. Then the gradient of $f(W)$ is the diagonal matrix
+    Let $\hat{z}$ be the vector $[\hat{z}_1\,\,\dots\,\,\hat{z}_n]^T$ where 
     $$
-    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left((P_{det} M_{shift})^T z \tilde{x}_{365}^T\right) + \lambda W^{-1} \log W
+    \hat{z}_i = \begin{cases}
+        \frac{\log \hat{y}_i}{\hat{y}_i} & \text{if observation $i$ is a detection} \\
+        0 & \text{if observation $i$ is a non-detection} 
+    \end{cases}
+    .$$
+    Then the gradient of $f(W)$ is the diagonal matrix
+    $$
+    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left(M_{shift}^T \hat{z} \tilde{x}_{365}^T\right) + \lambda W^{-1} \log W
     $$
     where $\mathrm{Diag}$ is the map that sets the off-diagonal elements of a matrix to zero.
 \end{proposition}
+
 \begin{proof}[Proof (still to be checked for calculation errors)]
 
 Parameterise $W$ linearly as $\mathrm{vec}\, W(t) = U t$ for some unitary $U$.
 Define $$
-G(t) := 
+G(t) :=
+P_{det} \hat{y}_i
+=
 P_{det} M_{shift} W(t) \tilde{x}_{365}
 \quad\text{and}\quad
 F(t) := \log.(G(t))
@@ -242,22 +252,26 @@ $$
 \frac{\partial}{\partial t} F(t) =
 \frac{\partial}{\partial t} \log.(G(t)) = \mathrm{diag}\,(G(t))^{-1} A
 .$$
+Write $z := P_{det} \hat{z}$.
+We can interpret $z$ as the vector obtained by applying the map $x \mapsto (\log x) / x$ elementwise to $G(t)$.
 Using standard differentiation rules for the squared norm of a vector-valued function, we obtain
 \begin{align*}
 \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right) = \left(\frac{\partial F}{\partial t}\right)^T F(t)
 &= A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
 &= A^T z \\
 &= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}_{365}) z \\
-&= U^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T
-.
+&= U^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T \\
+&= U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}_{365}^T \\
+&= U^T M_{shift}^T z \tilde{x}_{365}^T
 \end{align*}
+where the last equality follows from the fact that $P_{det}^T P_{det}$ is the map that sets the rows corresponding to the non-detection events to zero. 
 Since $U$ is unitary, we have $$
 \mathrm{grad}_W \left(\frac{1}{2} \norm{F(t)}^2 \right)
 =
 U \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right)
 =
 UU^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T
-.$$
+$$
 The linear map $UU^T$ is simply the orthogonal projector onto the diagonal matrices, which is equivalent to $\mathrm{Diag}$.
 
 The foregoing gives the derivative of the first term in $f(W)$. The gradient of the second term can be calculated in exactly the same manner: 

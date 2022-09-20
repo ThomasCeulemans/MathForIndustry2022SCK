@@ -200,6 +200,7 @@ INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmrom
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman5-regular.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-italic.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-bold.luc
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman7-italic.luc
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.aux
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.run.xml
 OUTPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.run.xml
