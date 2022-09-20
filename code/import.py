@@ -12,8 +12,18 @@ for file in os.listdir(MATRIX_LOCATION):
     if file.endswith(".csv"):
         matrix_file = pandas.read_csv(os.path.join(MATRIX_LOCATION, file), header=None)
         #TODO: find date and location from filename
+        #prune extension from filename
+        pruned_name = file.split('.')[0]
+        split_name = pruned_name.split('_')
+        print(split_name)
+        location = split_name[0]
+        date = split_name[1]
+        time = split_name[2]
+
+
+
         # print(os.path.join(MATRIX_LOCATION, file))
-        print(matrix_file)
+        # print(matrix_file)
 
 
         #TODO do something with the data
