@@ -12,15 +12,15 @@ sources=pandas.read_csv("./../data/data_xe133_NH_yearly.csv")#has a header file,
 print(scalings)
 print(sources)
 
-np_scalings=scalings[0].to_numpy()#/86400#number of seconds in a day
-np_sources=sources['emission'].to_numpy()
-print(np_sources.size)
-print(np_sources.shape)
+np_scalings=scalings[0].to_numpy()
+np_sources=sources['emission'].to_numpy()*1000#emission in mBq instead of Bq
+# print(np_sources.size)
+# print(np_sources.shape)
 #rescaling sources
-print("scalings: ", np_scalings)
-print("before dividing: ", np_sources)
+# print("scalings: ", np_scalings)
+# print("before dividing: ", np_sources)
 np_sources=np_sources/np_scalings
-print("after dividing:", np_sources)
+# print("after dividing:", np_sources)
 #np.divide(np_sources,np_scalings)
 
 
