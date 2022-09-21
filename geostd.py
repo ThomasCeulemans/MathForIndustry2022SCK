@@ -113,7 +113,7 @@ m = cm.ScalarMappable(norm = norm, cmap = cmap)
 colos = m.to_rgba(z)
 
 ## plot
-fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (16, 16))
+fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (40, 40))
 ax.add_geometries(world2['geometry'], crs = crs)
 gdf2.plot(ax = ax, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
 gdf4.plot(ax = ax, marker = 'o', color = 'red', markersize = 5, zorder = 11)
