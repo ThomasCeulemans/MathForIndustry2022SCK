@@ -37,7 +37,7 @@ reg_lambda = 1.0
 # reg_lambda = 1.0
 start_W = np.ones(default_x.shape)
 
-print(np.linalg.svd(pruned_giant_matrix))
+# print(np.linalg.svd(pruned_giant_matrix))
 
 
 # grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
