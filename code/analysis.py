@@ -4,10 +4,11 @@ def ln_y_squared(giant_matrix, xval_array):
     lny = np.log(giant_matrix @ xval_array)
     return lny.T @ lny
 
-def cost_function(giant_matrix, W, lambd):
+#W is vector of W
+def cost_function(giant_matrix, W, reg_lambda):
     # TODO: use W instead of xval_array; hint: reconstruct xvalues using this W (just kron as below)
     lny = np.log(giant_matrix @ xval_array)
-    regularization = lambd * np.log(weigths)
+    regularization = reg_lambda * np.log(weigths)
     return 1.0/2.0*(lny.T @ lny +regularization.T @ regularization)
 
 def evaluate_x(giant_matrix, xval_array):
@@ -15,9 +16,24 @@ def evaluate_x(giant_matrix, xval_array):
 
 
 
+#Gradient descent; is returned as a vector instead of a diagonal matrix
+#W is assumed to be a vector (corresponds with a diagonal matrix)
+def grad_cost_function(y, x_default, giant_matrix, W, reg_lambda, stepsize):
+    print("matrix shape_T: ", giant_matrix.T.shape)
+    print("y shape: ", y.shape)
+    print("matrix_T times y shape: ", (giant_matrix.T @ (np.log(y)/y)).shape)
+    print("x_T shape: ", x_default.T.shape)
+    #to determine the diagonal of the large matrix, we do not explicitly need to compute this large matrix
+    # matrix_cost = np.diag((giant_matrix.T @ (np.log(y)/y)) @ x_default.T)
+    #this 'diagonal matrix' is stored in vector format
+    matrix_cost = (giant_matrix.T @ (np.log(y)/y)) * x_default
+    reg_cost = reg_lambda / W * np.log(W)
+    return 1.0/2.0*(matrix_cost+reg_cost)
+
+
+
 
 #METRICS
-# Caculate metrics
 # mean Model Bias
 def MB(results):
     return np.mean(results[np.where(results>=0)])-1
