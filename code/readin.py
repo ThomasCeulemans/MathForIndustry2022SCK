@@ -76,6 +76,7 @@ def import_scaled_sources():
 # combined_dataframe=pandas.DataFrame()
 
 #first check all files for ordering, then combine all matrices
+#but we might just limit the max amount of days to get a grasp on the problem
 def import_combined_matrix():
     measurements_dict = {};
     giant_matrix = np.zeros((cst.N_DETECTIONS, cst.N_SOURCES*cst.N_COLS))
@@ -113,19 +114,22 @@ def import_combined_matrix():
         dayofyear = datetime.datetime.strptime(date_name, '%Y%m%d').timetuple().tm_yday - 1
         date = dayofyear
 
-        #and putting it in in the correct place?
-        largermat[:, date:date+cst.LIMIT_BACKWARD_TIME]=np_matrix
-        # print(largermat.shape)
-        #flatten the larger matrix
-        flatmat=largermat.flatten()
-        # print(flatmat.shape)
+        #in order to get a grasp on the general matrix
+        if date<=cst.MAX_DATE:
 
-        #and put it into a giant matrix
-        giant_matrix[index, :]=flatmat
-        #hmm, did I correctly treat observations on the same day; probably yes, as the observation will be put on another row
+            # and putting it in in the correct place?
+            largermat[:, date:date+cst.LIMIT_BACKWARD_TIME]=np_matrix
+            # print(largermat.shape)
+            #flatten the larger matrix
+            flatmat=largermat.flatten()
+            # print(flatmat.shape)
 
-        # print(flatmat)
-        index+=1
+            #and put it into a giant matrix
+            giant_matrix[index, :]=flatmat
+            #hmm, did I correctly treat observations on the same day; probably yes, as the observation will be put on another row
+
+            # print(flatmat)
+            index+=1
 
     return giant_matrix
 
