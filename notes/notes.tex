@@ -107,9 +107,9 @@ That is, for each emission source $j$, we simulate the contribution of 15 days, 
 \nonumber
 .\end{align}
 
-Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x}_{365} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}_{365}$ consists of $m = 200$ blocks, each of which is a constant vector of length $365$.
+Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is a constant vector of length $365$.
 
-We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}_{365}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have a linear relationship that looks something like this:
+We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have a linear relationship that looks something like this:
 $$
         \hat{y}_i
     =
@@ -143,11 +143,11 @@ Now assume that in each station, there is one observation per day, named $y_{kt}
     \vdots
 \end{bmatrix}
 }_{ := M_{shift}}
-\tilde{x}_{365}
+\tilde{x}
 \end{equation}
 where 
 $$
-\tilde{x}_{365} := S^{-1} x \otimes \vb{1}_{365}
+\tilde{x} := S^{-1} x \otimes \vb{1}_{365}
 =
 \begin{bmatrix}
     s_1^{-1} x_1 \\
@@ -159,7 +159,7 @@ $$
 \end{bmatrix}
 .$$
 
-We could reorganise the vector $\tilde{x}_{365}$ to the transposed expression $\vb{1}_{365} \otimes (S^{-1} x)$, which is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. This has the effect of permuting the rows and columns of $M_{shift}$. A permutation of the variables gives a model that is essentially the same as \cref{eq: initial model 365 days} but may have advantages when it comes to implementation or computational efficiency. We will not consider this.
+We could reorganise the vector $\tilde{x}$ to the transposed expression $\vb{1}_{365} \otimes (S^{-1} x)$, which is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. This has the effect of permuting the rows and columns of $M_{shift}$. A permutation of the variables gives a model that is essentially the same as \cref{eq: initial model 365 days} but may have advantages when it comes to implementation or computational efficiency. We will not consider this.
 
 \subsection{Model with time-dependent correction to the emissions}
 If we weigh each day and each emission source by some factor, we are applying a transformation
@@ -193,7 +193,7 @@ W = \begin{bmatrix}
     0 & 0 & \cdots & w_{m, 365}
 \end{bmatrix}
 .$$
-Using this weighted vector of emissions instead of $\tilde{x}_{365}$ in \cref{eq: initial model 365 days} gives
+Using this weighted vector of emissions instead of $\tilde{x}$ in \cref{eq: initial model 365 days} gives
 \begin{equation}
     \label{eq: time-evolving model concise}
 \hat{y} = M_{shift} W (S^{-1} x \otimes \vb{1}_{365})
@@ -213,9 +213,8 @@ In this expression, the unknown is $W$ and should be fit to the data.
 The indices $i = 1,\dots,n$ are partitioned as a disjoint union $\mathcal{I}_{det} \cup \mathcal{I}_{0}$ where $\mathcal{I}_0$ contains the indices of non-detection events. Let $P_{det}$ be the linear map that removes the rows of a matrix that correspond to $\mathcal{I}_0$. We can measure the accuracy as $\norm{\log.(P_{det} \hat{y})}^2$ where $\log.(\cdot)$ is the elementwise \emph{natural} logarithm. The simplicity of $W$ can be measured as $\norm{\log W}^2$. If we forget about non-detections, we have the cost function 
 $$
 \min_{W \text{ diagonal}} f(W) =
-\frac{1}{2}\norm{\log.(P_{det} M_{shift} W \tilde{x}_{365})}^2 + \frac{1}{2}\lambda \norm{\log W}^2
+\underbrace{\frac{1}{2}\norm{\log.(P_{det} M_{shift} W \tilde{x})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
 .$$
-The first term measures the average logarithm of the predicted values $\hat{y}$ (detection events only). The second term measures the average logarithm of the weights.
 \begin{proposition}
     Let $\hat{z}$ be the vector $[\hat{z}_1\,\,\dots\,\,\hat{z}_n]^T$ where 
     $$
@@ -226,7 +225,7 @@ The first term measures the average logarithm of the predicted values $\hat{y}$ 
     .$$
     Then the gradient of $f(W)$ is the diagonal matrix
     $$
-    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left(M_{shift}^T \hat{z} \tilde{x}_{365}^T\right) + \lambda W^{-1} \log W
+    \mathrm{grad}_{W} f(W) = \mathrm{Diag}\left(M_{shift}^T \hat{z} \tilde{x}^T\right) + \lambda W^{-1} \log W
     $$
     where $\mathrm{Diag}$ is the map that sets the off-diagonal elements of a matrix to zero.
 \end{proposition}
@@ -238,13 +237,13 @@ Define $$
 G(t) :=
 P_{det} \hat{y}_i
 =
-P_{det} M_{shift} W(t) \tilde{x}_{365}
+P_{det} M_{shift} W(t) \tilde{x}
 \quad\text{and}\quad
 F(t) := \log.(G(t))
 .$$
 Then 
 $$
-G(t) = \underbrace{P_{det} M_{shift} W(t) \tilde{x}_{365} = (P_{det}M_{shift} \oslash \tilde{x}_{365}^T) U}_A t
+G(t) = \underbrace{P_{det} M_{shift} W(t) \tilde{x} = (P_{det}M_{shift} \oslash \tilde{x}^T) U}_A t
 $$
 where $\oslash$ is the Kronecker product with reversed arguments, which satisfies $\mathrm{vec}(A B C) = (A \oslash C^T) \mathrm{vec} B$.
 Since $G(t)$ is linear, $F(t) = \log.(G(t))$ is easy to differentiate:
@@ -259,10 +258,10 @@ Using standard differentiation rules for the squared norm of a vector-valued fun
 \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right) = \left(\frac{\partial F}{\partial t}\right)^T F(t)
 &= A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
 &= A^T z \\
-&= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}_{365}) z \\
-&= U^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T \\
-&= U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}_{365}^T \\
-&= U^T M_{shift}^T z \tilde{x}_{365}^T
+&= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}) z \\
+&= U^T (P_{det} M_{shift})^T z \tilde{x}^T \\
+&= U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}^T \\
+&= U^T M_{shift}^T z \tilde{x}^T
 \end{align*}
 where the last equality follows from the fact that $P_{det}^T P_{det}$ is the map that sets the rows corresponding to the non-detection events to zero. 
 Since $U$ is unitary, we have $$
@@ -270,7 +269,7 @@ Since $U$ is unitary, we have $$
 =
 U \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right)
 =
-UU^T (P_{det} M_{shift})^T z \tilde{x}_{365}^T
+UU^T (P_{det} M_{shift})^T z \tilde{x}^T
 $$
 The linear map $UU^T$ is simply the orthogonal projector onto the diagonal matrices, which is equivalent to $\mathrm{Diag}$.
 
