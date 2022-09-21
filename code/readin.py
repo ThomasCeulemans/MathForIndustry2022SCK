@@ -138,6 +138,11 @@ def import_combined_matrix():
 def prune_matrix(matrix):
     return matrix[(matrix.min(axis=1)>=0.0) & (matrix.max(axis=1)>0.0)]
 
+
+#only keep negative row from the matrix
+def negative_rows_of(matrix):
+    return matrix[matrix.min(axis=1)<0.0]
+
 # for file in os.listdir(MATRIX_LOCATION):
 #     if file.endswith(".csv"):
 #         matrix_file = pandas.read_csv(os.path.join(MATRIX_LOCATION, file), header=None)

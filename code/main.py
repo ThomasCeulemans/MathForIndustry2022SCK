@@ -11,6 +11,8 @@ giant_matrix = read.import_combined_matrix()
 print("done importing matrix")
 #and throw away all zero/negative rows
 pruned_giant_matrix = read.prune_matrix(giant_matrix)
+negative_rows_giant_matrix = read.negative_rows_of(giant_matrix)
+
 
 #default source assumes all sources to be constant at all times
 default_x = np.kron(np_sources, np.ones(cst.N_COLS))
@@ -49,5 +51,24 @@ plt.figure()
 plt.hist(np.log10(y_corrected), bins=50)
 plt.xlabel("log10(y_corrected)")
 plt.legend()
-plt.title("Simulated observations")
+plt.title("Simulated observations lambda: "+str(reg_lambda))
+# plt.show()
+
+
+#simulated non-detections after optimization
+y_nondetections = analysis.evaluate_y(negative_rows_giant_matrix, default_x * resulting_W)
+#also plotting a histogram of the non-detections
+plt.figure()
+plt.hist(np.log10(-y_nondetections), bins=50)
+plt.xlabel("log10(-y_nondetections)")
+plt.title("Simulated non-detections lambda: "+str(reg_lambda))
+
+plt.figure()
+plt.hist(np.log10(resulting_W), bins=50)
+plt.xlabel("log10(weights)")
+# plt.hist(resulting_W, bins=50)
+# plt.xlabel("weights")
+plt.title("Optimized weights lambda: "+str(reg_lambda))
+print("weights: ", resulting_W)
+
 plt.show()
