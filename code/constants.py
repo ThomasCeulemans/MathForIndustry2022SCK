@@ -1,7 +1,7 @@
 #Just a file defining some constants for these scripts
 LIMIT_BACKWARD_TIME = 15
 N_SOURCES = 200
-N_DETECTIONS = 4636
+N_DETECTIONS = 4363
 MAX_DATE = 365
 # MAX_DATE = 40
 #allowing us to use values for 1 entire year

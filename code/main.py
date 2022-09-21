@@ -12,7 +12,6 @@ print("done importing matrix")
 #and throw away all zero/negative rows
 pruned_giant_matrix = read.prune_matrix(giant_matrix)
 negative_rows_giant_matrix = read.negative_rows_of(giant_matrix)
-nonzero_giant_matrix = read.nonzero_rows_of(giant_matrix)
 
 
 #default source assumes all sources to be constant at all times
@@ -56,8 +55,8 @@ start_W = np.ones(default_x.shape)
 # grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
 #
 # resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
-resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, nonzero_giant_matrix, start_W)
-y_corrected = analysis.h_transform(analysis.evaluate_y(nonzero_giant_matrix, default_x * resulting_W))
+resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, giant_matrix, start_W)
+y_corrected = analysis.h_transform(analysis.evaluate_y(giant_matrix, default_x * resulting_W))
 
 plt.figure()
 plt.hist(np.log10(y_corrected), bins=50)

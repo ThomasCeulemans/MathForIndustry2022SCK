@@ -143,8 +143,11 @@ def prune_matrix(matrix):
 def negative_rows_of(matrix):
     return matrix[matrix.min(axis=1)<0.0]
 
-def nonzero_rows_of(matrix):
-    return matrix[(matrix.max(axis=1)>0.0) | (matrix.min(axis=1)<0.0)]
+# def nonzero_rows_of(matrix):
+#     print("nb zero rows: ", matrix[(matrix.max(axis=1)==0.0) & (matrix.min(axis=1)==0.0)].shape)
+#     print("matrix shape: ", matrix.shape)
+#     print("returned matrix shape: ", matrix[(matrix.max(axis=1)>0.0) | (matrix.min(axis=1)<0.0)].shape)
+#     return matrix[(matrix.max(axis=1)>0.0) | (matrix.min(axis=1)<0.0)]
 
 # for file in os.listdir(MATRIX_LOCATION):
 #     if file.endswith(".csv"):
