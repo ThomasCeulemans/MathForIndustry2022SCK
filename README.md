@@ -7,3 +7,4 @@ python dependencies:
 - numpy
 - geopandas
 - shapely
+- cartopy
