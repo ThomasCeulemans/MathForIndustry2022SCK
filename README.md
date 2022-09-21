@@ -5,3 +5,5 @@ Repository for the modelling code.
 python dependencies:
 - pandas
 - numpy
+- geopandas
+- shapely
