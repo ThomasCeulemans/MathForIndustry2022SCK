@@ -76,7 +76,8 @@ for day, day_stations in days3.iteritems():
         data = pd.read_csv(os.path.join(m_paths, f), header = None)
         # np.matmul(data.T, sources['scaled'].values)
         dc = data[data > 0].sum(axis = 1) # total over 15 days, positive contributions only
-        daily += [dc]
+        sdc = np.multiply(dc, sources['scaled']) # scaled daily contributions
+        daily += [sdc]
     z = np.array(daily).sum(axis = 0)
 
     ## view
@@ -106,13 +107,13 @@ for day, day_stations in days3.iteritems():
 
     # color map
     #norm = mplc.Normalize(vmin = np.percentile(z, 5), vmax = np.percentile(z, 95))
-    norm = mplc.Normalize(vmin = 0, vmax = 100)
+    norm = mplc.Normalize(vmin = 0, vmax = 0.04)
     cmap = cm.jet
     m = cm.ScalarMappable(norm = norm, cmap = cmap)
     colos = m.to_rgba(z)
     
     ## plot
-    fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (16, 16))
+    fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (40, 40))
     ax.add_geometries(world2['geometry'], crs = crs)
     gdf2.plot(ax = ax, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
     gdf4.plot(ax = ax, marker = 'o', color = 'red', markersize = 5, zorder = 11)
@@ -141,5 +142,3 @@ for day, day_stations in days3.iteritems():
 # animation
 # https://underworldcode.github.io/stripy/2.0.5b2/FrontPage.html
 # https://coolum001.github.io/voronoi.html
-
-

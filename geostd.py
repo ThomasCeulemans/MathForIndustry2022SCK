@@ -73,7 +73,8 @@ for day, day_stations in days3.iteritems():
         data = pd.read_csv(os.path.join(m_paths, f), header = None)
         # np.matmul(data.T, sources['scaled'].values)
         dc = data[data > 0].sum(axis = 1) # total over 15 days, positive contributions only
-        daily += [dc]
+        sdc = np.multiply(dc, sources['scaled']) # scaled daily contributions
+        daily += [sdc]
     total += [daily]
 
 # values
@@ -106,7 +107,7 @@ poly_colors = [z[idx].sum() for idx in poly_pts]
 
 # color map
 #norm = mplc.Normalize(vmin = np.percentile(z, 5), vmax = np.percentile(z, 95))
-norm = mplc.Normalize(vmin = 0, vmax = 100)
+norm = mplc.Normalize(vmin = 0, vmax = 0.04)
 cmap = cm.jet
 m = cm.ScalarMappable(norm = norm, cmap = cmap)
 colos = m.to_rgba(z)
