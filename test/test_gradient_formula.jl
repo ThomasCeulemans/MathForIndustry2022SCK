@@ -19,7 +19,7 @@ W₀ = Diagonal(w₀)
 # gradient obtained from first principles
 ŷ = Mₛ*W₀*x̃
 ẑ = [ i ∈ Iᵈᵉᵗ ? log(ŷ[i]) / ŷ[i] : 0.0 for i ∈ axes(Mₛ,1)]
-∇f = Diagonal(Mₛ'*ẑ*x̃') + λ * (W₀ \ log(W₀))
+∇f = Diagonal((Mₛ'*ẑ) .* x̃) + λ * (W₀ \ log(W₀))
 
 println("|| ∇f || = ", norm(∇f))
 println("|| ∇fᴬᴰ || = ", norm(∇fᴬᴰ))
