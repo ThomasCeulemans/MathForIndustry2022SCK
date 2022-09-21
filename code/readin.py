@@ -92,7 +92,7 @@ def import_combined_matrix():
             time = split_name[2]
 
             #consistent index, starting at zero
-            dayofyear = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday - 1
+            # dayofyear = datetime.datetime.strptime(date, '%Y%m%d').timetuple().tm_yday - 1
             # print(dayofyear)
 
             # print("matrix: ", np_matrix.shape)
@@ -106,9 +106,12 @@ def import_combined_matrix():
         # print(dictel)
         np_matrix = val["matrix"]
 
+
         #setting up some larger matrix for eventually filling in the combined matrix
         largermat=np.zeros((cst.N_SOURCES, cst.N_COLS))
-        date=dayofyear
+        date_name = val["date"]
+        dayofyear = datetime.datetime.strptime(date_name, '%Y%m%d').timetuple().tm_yday - 1
+        date = dayofyear
 
         #and putting it in in the correct place?
         largermat[:, date:date+cst.LIMIT_BACKWARD_TIME]=np_matrix
