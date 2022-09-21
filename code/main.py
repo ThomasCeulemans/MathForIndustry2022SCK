@@ -22,8 +22,9 @@ plt.legend()
 plt.title("Simulated observations")
 # plt.show()
 
-nb_rows = giant_matrix.shape[1]
-print(nb_rows)
+# nb_rows = giant_matrix.shape[1]
+print("giant matrix shape: ", pruned_giant_matrix.shape)
+# print("nb cols: ", nb_rows)
 
 # print(analysis.grad_cost_function(np.ones(nb_rows)))
 W = np.ones(default_x.shape)
@@ -36,10 +37,12 @@ reg_lambda = 8.0
 start_W = np.ones(default_x.shape)
 stepsize = 0.05
 
+print(np.linalg.svd(pruned_giant_matrix))
 
-grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
 
-resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
-plt.figure()
-plt.hist(resulting_W, bins=50)
-plt.show()
+# grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
+#
+# resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
+# plt.figure()
+# plt.hist(resulting_W, bins=50)
+# plt.show()
