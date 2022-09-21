@@ -20,4 +20,11 @@ plt.hist(np.log10(y_sim), bins=50)
 plt.xlabel("log10(y_sim)")
 plt.legend()
 plt.title("Simulated observations")
-plt.show()
+# plt.show()
+
+nb_rows = giant_matrix.shape[1]
+print(nb_rows)
+
+# print(analysis.grad_cost_function(np.ones(nb_rows)))
+W = np.ones(default_x.shape)
+print(analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, 1, 0.001))
