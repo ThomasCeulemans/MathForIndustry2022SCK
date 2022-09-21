@@ -229,8 +229,7 @@ $$
     $$
     where $\mathrm{Diag}$ is the map that sets the off-diagonal elements of a matrix to zero.
 \end{proposition}
-
-\begin{proof}[Proof (still to be checked for calculation errors)]
+\begin{proof}
 
 Parameterise $W$ linearly as $\mathrm{vec}\, W(t) = U t$ for some unitary $U$.
 Define $$
@@ -243,9 +242,8 @@ F(t) := \log.(G(t))
 .$$
 Then 
 $$
-G(t) = \underbrace{P_{det} M_{shift} W(t) \tilde{x} = (P_{det}M_{shift} \oslash \tilde{x}^T) U}_A t
-$$
-where $\oslash$ is the Kronecker product with reversed arguments, which satisfies $\mathrm{vec}(A B C) = (A \oslash C^T) \mathrm{vec} B$.
+G(t) = P_{det} M_{shift} W(t) \tilde{x} = \underbrace{(\tilde{x}^T \otimes P_{det}M_{shift}) U}_A t
+.$$
 Since $G(t)$ is linear, $F(t) = \log.(G(t))$ is easy to differentiate:
 $$
 \frac{\partial}{\partial t} F(t) =
@@ -258,7 +256,7 @@ Using standard differentiation rules for the squared norm of a vector-valued fun
 \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right) = \left(\frac{\partial F}{\partial t}\right)^T F(t)
 &= A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
 &= A^T z \\
-&= U^T ((P_{det} M_{shift})^T \oslash \tilde{x}) z \\
+&= U^T (\tilde{x} \otimes (P_{det} M_{shift})^T) z \\
 &= U^T (P_{det} M_{shift})^T z \tilde{x}^T \\
 &= U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}^T \\
 &= U^T M_{shift}^T z \tilde{x}^T
@@ -278,6 +276,7 @@ $$
 \mathrm{grad}_W\, \left(\frac{1}{2}\norm{\log W}^2\right) = W^{-1} \log W
 .$$
 \end{proof}
+For even more evidence, there is a Julia script in the repository that checks this formula against the result obtained from automatic differentiation (using simplified mock data). The result is correct up to machine precision.
 
 
 \printbibliography
