@@ -9,8 +9,7 @@ python dependencies:
 - shapely
 - cartopy
 
-read_geopandas.py generates daily figures in /img
-geostd.py generates mean and std average figures in /img2
-
-subset data used in 48d8sta.csv
-48 consecutive days measured by 8 stations
+Files:
+- read_geopandas.py: generates daily figures in /img
+- geostd.py: generates mean and std average figures in /img2
+- 48d8sta.csv: subset data used, 48 consecutive days measured by 8 stations
