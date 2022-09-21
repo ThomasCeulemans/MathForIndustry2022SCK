@@ -1,11 +1,11 @@
 # Fdb version 3
-["biber notes"] 1663686447 "notes.bcf" "notes.bbl" "notes" 1663748824
+["biber notes"] 1663757205 "notes.bcf" "notes.bbl" "notes" 1663757764
   "library.bib" 1663674766 182 9a1ce570182722b43aa0dd7f85c876ab ""
-  "notes.bcf" 1663748824 101629 fa27c1767cd04a3ad5343b26ed0b8ce3 "lualatex"
+  "notes.bcf" 1663757764 101629 fa27c1767cd04a3ad5343b26ed0b8ce3 "lualatex"
   (generated)
-  "notes.blg"
   "notes.bbl"
-["lualatex"] 1663748823 "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.tex" "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.pdf" "notes" 1663748824
+  "notes.blg"
+["lualatex"] 1663757763 "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.tex" "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.pdf" "notes" 1663757764
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmmono10-regular.luc" 1627044125 77648 9781f5c8a34a4c0bc570a299d048fec7 ""
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-bold.luc" 1627034949 124213 be24eb5b757919758e60aa4f6d6aeb1d ""
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-italic.luc" 1627034948 132135 48267fd5932c239fb4bad361e29a6f1e ""
@@ -16,8 +16,8 @@
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman5-regular.luc" 1627042826 121774 c99e387d782447967e8d270ff980a91f ""
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman7-italic.luc" 1627410881 131790 68850e77c8d3596e0a0940ff2095d5e1 ""
   "/home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman7-regular.luc" 1627042826 124198 86fe133d3cae7b679738c113e6f1abb9 ""
-  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.aux" 1663748824 2603 939018966a3551b785432d2d741f48ec ""
-  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.tex" 1663748822 12119 7c002ae1bd056bd040fba2fbf0c2e605 ""
+  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.aux" 1663757764 2603 939018966a3551b785432d2d741f48ec ""
+  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.tex" 1663757762 12880 08406437b0606ee232808b09b359171e ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -140,17 +140,17 @@
   "/usr/share/texmf/fonts/opentype/public/lm/lmroman7-regular.otf" 1254938640 110792 5c4b6a3d7f194f073a529b5124a181af ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1626776305 4770781 1ed1abab22da9c3e2cc82e4db562318b ""
   "/var/lib/texmf/web2c/luatex/lualatex.fmt" 1626776330 2639669 94285b07e8f71690357ecfb1f32d8d4f ""
-  "notes.aux" 1663748824 2603 939018966a3551b785432d2d741f48ec "lualatex"
-  "notes.bbl" 1663686447 1868 5ec73b0ffa4432f1776c2949be711342 "biber notes"
-  "notes.out" 1663748824 764 e2f7ebbf21e04d81b5b3563e0b7e98eb "lualatex"
-  "notes.run.xml" 1663748824 2344 f44403fd8fe69fc775313f676422bec5 "lualatex"
-  "notes.tex" 1663748822 12119 7c002ae1bd056bd040fba2fbf0c2e605 ""
+  "notes.aux" 1663757764 2603 939018966a3551b785432d2d741f48ec "lualatex"
+  "notes.bbl" 1663757206 1868 5ec73b0ffa4432f1776c2949be711342 "biber notes"
+  "notes.out" 1663757764 764 e2f7ebbf21e04d81b5b3563e0b7e98eb "lualatex"
+  "notes.run.xml" 1663757764 2344 f44403fd8fe69fc775313f676422bec5 "lualatex"
+  "notes.tex" 1663757762 12880 08406437b0606ee232808b09b359171e ""
   (generated)
-  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.log"
   "notes.bcf"
-  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.pdf"
   "notes.aux"
-  "notes.pdf"
-  "notes.run.xml"
   "notes.log"
   "notes.out"
+  "notes.pdf"
+  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.pdf"
+  "/home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.log"
+  "notes.run.xml"

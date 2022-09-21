@@ -233,6 +233,15 @@ $$
 \min_{W \text{ diagonal}} f(W) =
 \underbrace{\frac{1}{2}\norm{\log.(P_{det} M_{shift} W \tilde{x})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
 .$$
+In order to optimise $f$ numerically, we need to be able to measure changes to $W$. We do this implicitly by parametrising $W = e^{\mathrm{diag}\, v}$ for some vector $v$. If we apply an absolute change $v' := v + \Delta v$ in numerical optimisation, this corresponds to the relative change $W' = W e^{\mathrm{diag} \Delta v}$. 
+Reformulating the cost function gives 
+$$
+\min_{v} f(v) =
+\underbrace{\frac{1}{2}\norm{\log.(P_{det} M_{shift} e^{\mathrm{diag}\, v} \tilde{x})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{v}^2}_{\text{deviation from average emission}}
+.$$
+
+
+
 \begin{proposition}
     Let $\hat{z}$ be the vector $[\hat{z}_1\,\,\dots\,\,\hat{z}_n]^T$ where 
     $$
@@ -241,62 +250,68 @@ $$
         0 & \text{if observation $i$ is a non-detection} 
     \end{cases}
     .$$
-    Then the gradient of $f(W)$ is the diagonal matrix
+    Then
     $$
-    \mathrm{grad}_{W} f(W) = \mathrm{diag}\left(\left(M_{shift}^T \hat{z}\right) \odot \tilde{x}\right) + \lambda W^{-1} \log W
+    \mathrm{grad}_{v} f(v) = e^v \odot (M_{shift}^T \hat{z}) \odot \tilde{x} + \lambda v
     .$$
 \end{proposition}
 \begin{proof}
 
-Parameterise $W$ linearly as $\mathrm{vec}\, W(t) = U t$ for some unitary $U$.
+Let $U = \mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\, W(v) = U e^v$ where $e^v$ denotes elementwise exponentiation.
 Define $$
-G(t) :=
+G(v) :=
 P_{det} \hat{y}_i
 =
-P_{det} M_{shift} W(t) \tilde{x}
+P_{det} M_{shift} W(v) \tilde{x}
 \quad\text{and}\quad
-F(t) := \log.(G(t))
+F(v) := \log.(G(v))
 .$$
 Then 
 $$
-G(t) = P_{det} M_{shift} W(t) \tilde{x} = \underbrace{(\tilde{x}^T \otimes P_{det}M_{shift}) U}_A t
-.$$
-Since $G(t)$ is linear, $F(t) = \log.(G(t))$ is easy to differentiate:
+G(v) = P_{det} M_{shift} W(v) \tilde{x}
+=
+(\tilde{x}^T \otimes P_{det} M_{shift}) \mathrm{vec} W(v)
+=
+\underbrace{(\tilde{x}^T \otimes P_{det}M_{shift}) U}_A e^v
 $$
-\frac{\partial}{\partial t} F(t) =
-\frac{\partial}{\partial t} \log.(G(t)) = \mathrm{diag}\,(G(t))^{-1} A
+so that 
+$$
+\frac{\partial G}{\partial v} = A e^{\mathrm{diag}\, v}
+.$$
+Differentiating $F(v) = \log.(G(v))$ gives:
+$$
+\frac{\partial F}{\partial v}
+=
+\frac{\partial}{\partial v} \log.(G(v))
+=
+\mathrm{diag}\,(G(v))^{-1} \frac{\partial G}{\partial v}
+=
+\mathrm{diag}\,(G(v))^{-1} A e^{\mathrm{diag}\, v }
 .$$
 Write $z := P_{det} \hat{z}$.
-We can interpret $z$ as the vector obtained by applying the map $x \mapsto (\log x) / x$ elementwise to $G(t)$.
+We can interpret $z$ as the vector obtained by applying the map $x \mapsto (\log x) / x$ elementwise to $G(v)$.
 Using standard differentiation rules for the squared norm of a vector-valued function, we obtain
 \begin{align*}
-\mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right) = \left(\frac{\partial F}{\partial t}\right)^T F(t)
-&= A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
-&= A^T z \\
-&= U^T (\tilde{x} \otimes (P_{det} M_{shift})^T) z \\
-&= U^T (P_{det} M_{shift})^T z \tilde{x}^T \\
-&= U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}^T \\
-&= U^T M_{shift}^T \hat{z} \tilde{x}^T
+\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right) =\left(\frac{\partial F}{\partial v}\right)^T F(v)
+&= e^{\mathrm{diag}\, v} A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
+&= e^{\mathrm{diag}\, v} A^T z \\
+&= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes (P_{det} M_{shift})^T) z \\
+&= e^{\mathrm{diag}\, v} U^T (P_{det} M_{shift})^T z \tilde{x}^T \\
+&= e^{\mathrm{diag}\, v} U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}^T \\
+&= e^{\mathrm{diag}\, v} U^T M_{shift}^T \hat{z} \tilde{x}^T
 \end{align*}
 where the last equality follows from the fact that $P_{det}^T P_{det}$ is the map that sets the rows corresponding to the non-detection events to zero. 
-Since $U$ is unitary, we have $$
-\mathrm{grad}_W \left(\frac{1}{2} \norm{F(t)}^2 \right)
-=
-U \mathrm{grad}_t\, \left(\frac{1}{2} \norm{F(t)}^2 \right)
-=
-UU^T M_{shift}^T \hat{z} \tilde{x}^T
+By construction of $U$, the map $U^T$ projects its argument orthogonally onto the diagonal matrices and gives the diagonal element. The orthogonal projection of a matrix onto the diagonal matrices is obtained by setting the off-diagonal elements to zero. The diagonal elements of $M_{shift}^T \hat{z} \tilde{x}^T$ are $(M_{shift}^T \hat{z}) \odot \tilde{x}$, so that the above simplifies to
 $$
-The linear map $UU^T$ is simply the orthogonal projector onto the diagonal matrices. This orthogonal projection simply sets the off-diagonal elements of its argument to zero. Since the diagonal of $M_{shift}^T \hat{z} \tilde{x}^T$ is $(M_{shift}^T \hat{z}) \odot \tilde{x}$, we have 
-$$
-\mathrm{grad}_W \left(\frac{1}{2} \norm{F(t)}^2 \right)
+\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right)
 =
-\mathrm{diag}((M_{shift}^T \hat{z}) \odot \tilde{x})
+e^{\mathrm{diag}\, v} \left((M_{shift}^T \hat{z}) \odot \tilde{x}\right)
+=
+e^v \odot (M_{shift}^T \hat{z}) \odot \tilde{x}
 .$$
 
-The foregoing gives the derivative of the first term in $f(W)$. The gradient of the second term can be calculated in exactly the same manner: 
-$$
-\mathrm{grad}_W\, \left(\frac{1}{2}\norm{\log W}^2\right) = W^{-1} \log W
-.$$
+The foregoing gives the derivative of the first term in $f(W)$. The gradient of the second term can is simply $\lambda v$.
+
 \end{proof}
 For even more evidence, there is a Julia script in the repository that checks this formula against the result obtained from automatic differentiation (using simplified mock data). The result is correct up to machine precision.
 
