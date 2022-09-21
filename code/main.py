@@ -32,17 +32,22 @@ print(analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, 1))
 
 
 #just some random value to try out gradient descent
-reg_lambda = 8.0
+reg_lambda = 1.0
+# reg_lambda = 0.0
 # reg_lambda = 1.0
 start_W = np.ones(default_x.shape)
-stepsize = 0.05
 
 print(np.linalg.svd(pruned_giant_matrix))
 
 
 # grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
 #
-# resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
-# plt.figure()
-# plt.hist(resulting_W, bins=50)
-# plt.show()
+resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
+y_corrected = analysis.evaluate_y(pruned_giant_matrix, default_x * resulting_W)
+
+plt.figure()
+plt.hist(np.log10(y_corrected), bins=50)
+plt.xlabel("log10(y_corrected)")
+plt.legend()
+plt.title("Simulated observations")
+plt.show()

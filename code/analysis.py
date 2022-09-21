@@ -37,17 +37,30 @@ def grad_cost_function(y, x_default, giant_matrix, W, reg_lambda):
     return (matrix_cost+reg_cost)
 
 
-
+#returns the optimized weights
 def gradient_descent_algorithm(reg_lambda, np_sources, giant_matrix, start_W):
     default_x = np.kron(np_sources, np.ones(cst.N_COLS))
     W = start_W
 
-    lambda_cost_function = lambda W :cost_function(giant_matrix, W*default_x, W, reg_lambda)
+    #optimizing lnW makes sure that W will always be positive
+    lnW = np.log(W)
+
+    #original optimization stuff for W
+    lambda_cost_function = lambda W : cost_function(giant_matrix, W*default_x, W, reg_lambda)
     lambda_gradient_function = lambda W : grad_cost_function(evaluate_y(giant_matrix, W*default_x), default_x, giant_matrix, W, reg_lambda)
 
-    optimized_result = sp.optimize.minimize(lambda_cost_function, start_W, method = "L-BFGS-B", jac=lambda_gradient_function)
+    #(lazy) derived optimization stuff for ln(W)
+    lnW_cost_function = lambda lnW : lambda_cost_function(np.exp(lnW))
+    lnW_gradient_function = lambda lnW : np.exp(lnW)*lambda_gradient_function(np.exp(lnW))
+
+    print("gradient at initial: ", lnW_gradient_function(lnW))
+    # optimization for W
+    # optimized_result = sp.optimize.minimize(lambda_cost_function, start_W, method = "L-BFGS-B", jac=lambda_gradient_function)
+
+    # optimization for lnW
+    optimized_result = sp.optimize.minimize(lnW_cost_function, lnW, method = "CG", jac=lnW_gradient_function)
     print(optimized_result)
-    return optimized_result['x']
+    return np.exp(optimized_result['x'])
     # x = default_x * W
     # for i in range(max_n_it):
     #     #compute y
