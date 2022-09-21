@@ -1,11 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
+import itertools
+from collections import Counter
 
-# https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
-# https://geopandas.org/en/latest/gallery/cartopy_convert.html
-# https://stackoverflow.com/questions/55646598/polar-stereographic-projection-of-geopandas-world-map
-# https://geopandas.org/en/latest/gallery/cartopy_convert.html
 from matplotlib import pyplot as plt
 import matplotlib.cm as cm
 from shapely.geometry import Point, Polygon, MultiPoint
@@ -26,16 +24,43 @@ samples = pd.DataFrame([f.split('_') for f in os.listdir(m_paths)],
                        columns = ['obs', 'd', 't'])
 samples.drop_duplicates(subset = ['obs', 'd'], inplace = True)
 
-# keep days with all stations
-days = samples.groupby('d')['obs'].apply(set)
-s, c = np.unique(days.values, return_counts = True)
-print(c.max(), s[c.argmax()])
-best = days[days == s[c.argmax()]]
-samples2 = samples[samples['d'].isin(best.index.values)].copy()
+# keep days with most common stations
+stations = samples['obs'].unique()
+days = samples.groupby('d')['obs'].apply(set) # groupby days, get set of available stations
 
-## todo, most consecutive
+comb = [set(v) for i in range(1, len(stations) + 1) for v in itertools.combinations(stations, i)] # all possible combinations
+count = [days.apply(lambda x: c.issubset(x)).sum() for c in comb] # count combination is subset
+description = pd.DataFrame({'subsets': comb,
+                            'len': [len(c) for c in comb],
+                            'count': count})
+#description.to_csv('common_subsets.csv')
 
-for row in samples2.iterrows():
+# use subset with most stations
+thresh = 100 # at least 100 days (*note later remove non consecutive)
+availb = description[description['count'] > thresh]
+availb.iloc[availb['len'].argmax()]
+subset, sublen, subcnt = availb.iloc[availb['len'].argmax()]
+
+days2 = days[days.apply(lambda x: subset.issubset(x))].copy()
+samples2 = samples[samples['obs'].isin(subset) & samples['d'].isin(days2.index.values)].copy()
+
+s, c = np.unique(samples2['d'], return_counts = True)
+print(c.min() == sublen, sublen, 'stations,', subcnt, 'days') # safety check
+
+# keep consecutive days
+daysdiff = pd.to_datetime(days2.index).to_series().diff().astype('timedelta64[D]').values
+breaks = np.where(daysdiff != 1)[0]
+mcdidx = np.diff(breaks).argmax() # most consecutive days index
+start = breaks[mcdidx]
+stop = breaks[mcdidx + 1] - 1
+print(days2.index[start], '>', days2.index[stop], np.diff(breaks).max(), 'consecutive days')
+days3 = days2.iloc[range(start, stop + 1)].copy()
+
+# final subset
+samples3 = samples2[samples2['d'].isin(days3.index.values)].copy()
+#samples3.apply('_'.join, axis = 1).to_csv('48d8sta.csv')
+
+for row in samples3.iterrows():
     f = '_'.join(samples2.iloc[0])
     data = pd.read_csv(os.path.join(m_paths, f), header = None)
     # np.matmul(data.T, sources['scaled'].values)
@@ -75,7 +100,6 @@ for row in samples2.iterrows():
     ## plot
     fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (8, 6))
     ax.add_geometries(world2['geometry'], crs = crs)
-    ##gdf2.plot(ax = ax, marker = 'o', color = 'red', alpha = 0.5, zorder = 10)
     gdf2.plot(ax = ax, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
     gdf4.plot(ax = ax, marker = 'o', color = 'red', markersize = 5, zorder = 11)
     plt.show()
@@ -87,4 +111,12 @@ for row in samples2.iterrows():
 
     x
 
-    ## TODO: animation
+
+
+# https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
+# https://geopandas.org/en/latest/gallery/cartopy_convert.html
+# https://stackoverflow.com/questions/55646598/polar-stereographic-projection-of-geopandas-world-map
+
+## TODO
+# animation
+# https://underworldcode.github.io/stripy/2.0.5b2/FrontPage.html
