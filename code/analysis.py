@@ -1,35 +1,64 @@
 import numpy as np
+import constants as cst
+import scipy as sp
 
 def ln_y_squared(giant_matrix, xval_array):
     lny = np.log(giant_matrix @ xval_array)
     return lny.T @ lny
 
-#W is vector of W
-def cost_function(giant_matrix, W, reg_lambda):
+#W is vector
+#TODO FIXME
+#xval_array = W * default_x
+def cost_function(giant_matrix, xval_array, W, reg_lambda):
     # TODO: use W instead of xval_array; hint: reconstruct xvalues using this W (just kron as below)
     lny = np.log(giant_matrix @ xval_array)
-    regularization = reg_lambda * np.log(weigths)
+    regularization = reg_lambda * np.log(W)
+    print("cost: ", 1.0/2.0*(lny.T @ lny +regularization.T @ regularization))
+    print("min weight: ", np.min(W))
     return 1.0/2.0*(lny.T @ lny +regularization.T @ regularization)
 
-def evaluate_x(giant_matrix, xval_array):
+def evaluate_y(giant_matrix, xval_array):
     return giant_matrix @ xval_array
 
 
 
 #Gradient descent; is returned as a vector instead of a diagonal matrix
 #W is assumed to be a vector (corresponds with a diagonal matrix)
-def grad_cost_function(y, x_default, giant_matrix, W, reg_lambda, stepsize):
-    print("matrix shape_T: ", giant_matrix.T.shape)
-    print("y shape: ", y.shape)
-    print("matrix_T times y shape: ", (giant_matrix.T @ (np.log(y)/y)).shape)
-    print("x_T shape: ", x_default.T.shape)
+def grad_cost_function(y, x_default, giant_matrix, W, reg_lambda):
+    # print("matrix shape_T: ", giant_matrix.T.shape)
+    # print("y shape: ", y.shape)
+    # print("matrix_T times y shape: ", (giant_matrix.T @ (np.log(y)/y)).shape)
+    # print("x_T shape: ", x_default.T.shape)
     #to determine the diagonal of the large matrix, we do not explicitly need to compute this large matrix
     # matrix_cost = np.diag((giant_matrix.T @ (np.log(y)/y)) @ x_default.T)
     #this 'diagonal matrix' is stored in vector format
     matrix_cost = (giant_matrix.T @ (np.log(y)/y)) * x_default
     reg_cost = reg_lambda / W * np.log(W)
-    return 1.0/2.0*(matrix_cost+reg_cost)
+    return (matrix_cost+reg_cost)
 
+
+
+def gradient_descent_algorithm(reg_lambda, np_sources, giant_matrix, start_W):
+    default_x = np.kron(np_sources, np.ones(cst.N_COLS))
+    W = start_W
+
+    lambda_cost_function = lambda W :cost_function(giant_matrix, W*default_x, W, reg_lambda)
+    lambda_gradient_function = lambda W : grad_cost_function(evaluate_y(giant_matrix, W*default_x), default_x, giant_matrix, W, reg_lambda)
+
+    optimized_result = sp.optimize.minimize(lambda_cost_function, start_W, method = "L-BFGS-B", jac=lambda_gradient_function)
+    print(optimized_result)
+    return optimized_result['x']
+    # x = default_x * W
+    # for i in range(max_n_it):
+    #     #compute y
+    #     y = evaluate_x(giant_matrix, default_x * W)
+    #     #correct W
+    #     gradient = grad_cost_function(y, default_x, giant_matrix, W, reg_lambda)
+    #     W -= stepsize * gradient * W
+    #     print("cost: ", cost_function(giant_matrix, W * default_x, reg_lambda))
+    #     if (i%print_every_n_its):
+    #         print("it: ", i)
+    # return W
 
 
 
