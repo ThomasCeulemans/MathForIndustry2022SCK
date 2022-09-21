@@ -63,6 +63,61 @@ def grad_cost_function_ln(y, x_default, giant_matrix, lnW, reg_lambda):
     reg_cost = reg_lambda * lnW
     return (matrix_cost+reg_cost)
 
+
+#for all negative values, we transform it into the following
+def h_transform(Mx):
+    # print("before h_transform: ", Mx)
+    negative_indices = Mx < 0
+    # print("negative indices: ", negative_indices)
+    small_negative_indices = (Mx < 0) & (Mx > -2)
+    # print("small negative indices: ", small_negative_indices)
+    Mx[negative_indices] = -Mx[negative_indices]
+    Mx[small_negative_indices] = np.power(Mx[small_negative_indices], 2) / 4.0 + np.ones(Mx[small_negative_indices].shape)
+    # print("h_transform: ", Mx)
+    return Mx
+
+#returns gradient multiplication factors
+def grad_h_transform(Mx):
+    temp_grad = np.ones(Mx.shape)
+    negative_indices = Mx < 0
+
+    small_negative_indices = (Mx < 0) & (Mx > -2)
+    temp_grad[negative_indices] = -temp_grad[negative_indices]
+    temp_grad[small_negative_indices] = Mx[small_negative_indices] / 2.0
+    # print("tempgrad: ", temp_grad)
+    return temp_grad
+
+
+#cost function using lnW and the h function transform
+def cost_function_ln_hfun(giant_matrix, xval_array, lnW, reg_lambda):
+    # W = np.exp(lnW)
+    lny = np.log(h_transform(giant_matrix @ xval_array))
+    regularization = reg_lambda * lnW
+    print("min lnW: ", np.min(lnW))
+    print("max lnW: ", np.max(lnW))
+    cost = 1.0/2.0*(lny.T @ lny +regularization.T @ regularization)
+    print("cost: ", cost)
+    return cost
+
+
+#Gradient descent; is returned as a vector instead of a diagonal matrix
+#gradient function using lnW to derive to and using the h function transform
+#Note: y should be the original y=MWx, which contains negative values for the non-detections
+def grad_cost_function_ln_hfun(y, x_default, giant_matrix, lnW, reg_lambda):
+    # print("matrix shape_T: ", giant_matrix.T.shape)
+    # print("y shape: ", y.shape)
+    # print("matrix_T times y shape: ", (giant_matrix.T @ (np.log(y)/y)).shape)
+    # print("x_T shape: ", x_default.T.shape)
+    #to determine the diagonal of the large matrix, we do not explicitly need to compute this large matrix
+    # matrix_cost = np.diag((giant_matrix.T @ (np.log(y)/y)) @ x_default.T)
+    #this 'diagonal matrix' is stored in vector format
+    y_trans = h_transform(y)
+    W = np.exp(lnW)
+    matrix_cost = W * (giant_matrix.T @ (np.log(y_trans)/y_trans * grad_h_transform(y))) * x_default
+    reg_cost = reg_lambda * lnW
+    return (matrix_cost+reg_cost)
+
+
 #returns the optimized weights
 def gradient_descent_algorithm(reg_lambda, np_sources, giant_matrix, start_W):
     default_x = np.kron(np_sources, np.ones(cst.N_COLS))
@@ -80,9 +135,12 @@ def gradient_descent_algorithm(reg_lambda, np_sources, giant_matrix, start_W):
     # lnW_gradient_function = lambda lnW : np.exp(lnW)*lambda_gradient_function(np.exp(lnW))
 
     #optimization stuff for lnW
-    lnW_cost_function = lambda lnW : cost_function_ln(giant_matrix, np.exp(lnW)*default_x, lnW, reg_lambda)
-    lnW_gradient_function = lambda lnW : grad_cost_function_ln(evaluate_y(giant_matrix, np.exp(lnW)*default_x), default_x, giant_matrix, lnW, reg_lambda)
+    # lnW_cost_function = lambda lnW : cost_function_ln(giant_matrix, np.exp(lnW)*default_x, lnW, reg_lambda)
+    # lnW_gradient_function = lambda lnW : grad_cost_function_ln(evaluate_y(giant_matrix, np.exp(lnW)*default_x), default_x, giant_matrix, lnW, reg_lambda)
 
+    #optimization stuff for lnW, also incorporating the non-detections
+    lnW_cost_function = lambda lnW : cost_function_ln_hfun(giant_matrix, np.exp(lnW)*default_x, lnW, reg_lambda)
+    lnW_gradient_function = lambda lnW : grad_cost_function_ln_hfun(evaluate_y(giant_matrix, np.exp(lnW)*default_x), default_x, giant_matrix, lnW, reg_lambda)
 
 
     print("gradient at initial: ", lnW_gradient_function(lnW))

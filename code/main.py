@@ -12,6 +12,7 @@ print("done importing matrix")
 #and throw away all zero/negative rows
 pruned_giant_matrix = read.prune_matrix(giant_matrix)
 negative_rows_giant_matrix = read.negative_rows_of(giant_matrix)
+nonzero_giant_matrix = read.nonzero_rows_of(giant_matrix)
 
 
 #default source assumes all sources to be constant at all times
@@ -24,6 +25,16 @@ plt.legend()
 plt.title("Simulated observations")
 # plt.show()
 
+y_non = analysis.evaluate_y(negative_rows_giant_matrix, default_x)
+#also plotting the non-detections
+plt.figure()
+plt.hist(np.log10(-y_non), bins=50)
+plt.xlabel("log10(-y_non)")
+plt.legend()
+plt.title("Simulated non-detections")
+
+# plt.show()
+
 # nb_rows = giant_matrix.shape[1]
 print("giant matrix shape: ", pruned_giant_matrix.shape)
 # print("nb cols: ", nb_rows)
@@ -34,7 +45,7 @@ print(analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, 1))
 
 
 #just some random value to try out gradient descent
-reg_lambda = 1.0
+reg_lambda = 0.1
 # reg_lambda = 0.0
 # reg_lambda = 1.0
 start_W = np.ones(default_x.shape)
@@ -44,8 +55,9 @@ start_W = np.ones(default_x.shape)
 
 # grad = analysis.grad_cost_function(y_sim, default_x, pruned_giant_matrix, W, reg_lambda)
 #
-resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
-y_corrected = analysis.evaluate_y(pruned_giant_matrix, default_x * resulting_W)
+# resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, pruned_giant_matrix, start_W)
+resulting_W = analysis.gradient_descent_algorithm(reg_lambda, np_sources, nonzero_giant_matrix, start_W)
+y_corrected = analysis.h_transform(analysis.evaluate_y(nonzero_giant_matrix, default_x * resulting_W))
 
 plt.figure()
 plt.hist(np.log10(y_corrected), bins=50)
