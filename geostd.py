@@ -61,14 +61,11 @@ days3 = days2.iloc[range(start, stop + 1)].copy()
 samples3 = samples2[samples2['d'].isin(days3.index.values)].copy()
 #samples3.apply('_'.join, axis = 1).to_csv('48d8sta.csv')
 
+
+## get contributions for all 48 days
+total = []
 for day, day_stations in days3.iteritems():
     files = samples3[samples3['d'] == day].apply('_'.join, axis = 1)
-
-    ## sum influence from all stations
-    #for f in files:
-    #    data = pd.read_csv(os.path.join(m_paths, f), header = None)
-    #    # np.matmul(data.T, sources['scaled'].values)
-    #    z = data.sum(axis = 1) # total over 15 days
 
     ## sum influence from all stations
     daily = []
@@ -77,81 +74,83 @@ for day, day_stations in days3.iteritems():
         # np.matmul(data.T, sources['scaled'].values)
         dc = data[data > 0].sum(axis = 1) # total over 15 days, positive contributions only
         daily += [dc]
+    total += [daily]
 
-    z = np.array(daily).sum(axis = 0)
+# values
+z = np.array(total).sum(axis = 1).std(axis = 0) # mean, std, var
 
-    # color map
-    norm = mplc.Normalize(vmin = 0, vmax = np.percentile(z, 95))
-    cmap = cm.jet
-    m = cm.ScalarMappable(norm = norm, cmap = cmap)
-    colos = m.to_rgba(z)
-    
-    ## view
-    crs = ccrs.NorthPolarStereo()
-    crs_proj4 = crs.proj4_init
+# color map
+norm = mplc.Normalize(vmin = 0, vmax = np.percentile(z, 95))
+cmap = cm.jet
+m = cm.ScalarMappable(norm = norm, cmap = cmap)
+colos = m.to_rgba(z)
 
-    ## patches
-    points = MultiPoint([v for v in zip(sources['Longitude'], sources['Latitude'])])
-    regions = voronoi_diagram(points)
-    polygons = [v for v in regions.geoms]
-    gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
-    gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
+## view
+crs = ccrs.NorthPolarStereo()
+crs_proj4 = crs.proj4_init
 
-    ## notes on: index = range(len(polygons))
-    # less polygons 196 than stations 200
-    # POINT (49.47658 54.18786)     3
-    # POINT (49.52358 54.20081)     3
-    # 172   Russian Federation	VK-50	    54.187856	49.476581
-    # 175   Russian Federation	SM-3	    54.187856	49.476581
-    # 179   Russian Federation	MIR.M1	    54.187856	49.476581
-    # 178   Russian Federation	BOR-60	    54.200812	49.523576
-    # 196   Russian Federation	RBT-10/2    54.200812	49.523576
-    # 197   Russian Federation	RBT-6	    54.200812	49.523576
-    # => overlap
-    ## MANUAL FIX
-    z = z.tolist()
-    z[172] = z[172] + z[175] + z[179]
-    z[178] = z[178] + z[196] + z[197]
-    z = [v for k, v in enumerate(z) if k not in [175, 179, 178, 197]]
-    colos = m.to_rgba(z)
+## patches
+points = MultiPoint([v for v in zip(sources['Longitude'], sources['Latitude'])])
+regions = voronoi_diagram(points)
+polygons = [v for v in regions.geoms]
+gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
+gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
 
-    points = MultiPoint([v for k, v in enumerate(zip(sources['Longitude'], sources['Latitude'])) if k not in [175, 179, 178, 197]])
-    regions = voronoi_diagram(points)
-    polygons = [v for v in regions.geoms]
-    gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
-    gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
-    # todo: group very small points or patches
-    
-    ## markers
-    geometry = [Point(xy) for xy in zip(sources['Longitude'], sources['Latitude'])]
-    gdf3 = gpd.GeoDataFrame(sources, geometry = geometry, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
-    gdf4 = gdf3.to_crs(crs_proj4) # project points to new CRS
+## notes on: index = range(len(polygons))
+# less polygons 196 than stations 200
+# POINT (49.47658 54.18786)     3
+# POINT (49.52358 54.20081)     3
+# 172   Russian Federation	VK-50	    54.187856	49.476581
+# 175   Russian Federation	SM-3	    54.187856	49.476581
+# 179   Russian Federation	MIR.M1	    54.187856	49.476581
+# 178   Russian Federation	BOR-60	    54.200812	49.523576
+# 196   Russian Federation	RBT-10/2    54.200812	49.523576
+# 197   Russian Federation	RBT-6	    54.200812	49.523576
+# => overlap
+## MANUAL FIX
+z = z.tolist()
+z[172] = z[172] + z[175] + z[179]
+z[178] = z[178] + z[196] + z[197]
+z = [v for k, v in enumerate(z) if k not in [175, 179, 178, 197]]
+colos = m.to_rgba(z)
+
+points = MultiPoint([v for k, v in enumerate(zip(sources['Longitude'], sources['Latitude'])) if k not in [175, 179, 178, 197]])
+regions = voronoi_diagram(points)
+polygons = [v for v in regions.geoms]
+gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
+gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
+# todo: group very small points or patches
+
+## markers
+geometry = [Point(xy) for xy in zip(sources['Longitude'], sources['Latitude'])]
+gdf3 = gpd.GeoDataFrame(sources, geometry = geometry, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
+gdf4 = gdf3.to_crs(crs_proj4) # project points to new CRS
 
 
-    ## background
-    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-    world2 = world.to_crs(crs_proj4)
+## background
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+world2 = world.to_crs(crs_proj4)
 
-    ## plot
-    fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (16, 16))
-    ax.add_geometries(world2['geometry'], crs = crs)
-    gdf2.plot(ax = ax, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
-    gdf4.plot(ax = ax, marker = 'o', color = 'red', markersize = 5, zorder = 11)
+## plot
+fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (16, 16))
+ax.add_geometries(world2['geometry'], crs = crs)
+gdf2.plot(ax = ax, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
+gdf4.plot(ax = ax, marker = 'o', color = 'red', markersize = 5, zorder = 11)
 
-    minx, miny, maxx, maxy = gdf4.total_bounds
-    ax.set_xlim(minx, maxx)
-    ax.set_ylim(miny, maxy)
+minx, miny, maxx, maxy = gdf4.total_bounds
+ax.set_xlim(minx, maxx)
+ax.set_ylim(miny, maxy)
 
-    fig.colorbar(m, ax = ax, fraction=0.02, pad=0.02)
-    plt.show()
+fig.colorbar(m, ax = ax, fraction=0.02, pad=0.02)
+#plt.show()
 
-    #ax2 = world.plot(figsize = (8, 6))
-    #gdf.plot(ax = ax2, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
-    #gdf3.plot(ax = ax2, marker = 'o', color = 'red', markersize = 5)
-    #plt.show()
+#ax2 = world.plot(figsize = (8, 6))
+#gdf.plot(ax = ax2, marker = 'o', color = colos, alpha = 0.5, zorder = 10)
+#gdf3.plot(ax = ax2, marker = 'o', color = 'red', markersize = 5)
+#plt.show()
 
-    plt.savefig(os.path.join('img', '{}.png'.format(day)), bbox_inches = 'tight')
-    plt.close(fig)
+plt.savefig(os.path.join('img2', 'std.png'.format(day)), bbox_inches = 'tight')
+plt.close(fig)
 
 
 # https://stackoverflow.com/questions/53233228/plot-latitude-longitude-from-csv-in-python-3-6
@@ -163,5 +162,6 @@ for day, day_stations in days3.iteritems():
 # animation
 # https://underworldcode.github.io/stripy/2.0.5b2/FrontPage.html
 # https://coolum001.github.io/voronoi.html
+
 
 
