@@ -79,12 +79,6 @@ for day, day_stations in days3.iteritems():
 # values
 z = np.array(total).sum(axis = 1).std(axis = 0) # mean, std, var
 
-# color map
-norm = mplc.Normalize(vmin = 0, vmax = np.percentile(z, 95))
-cmap = cm.jet
-m = cm.ScalarMappable(norm = norm, cmap = cmap)
-colos = m.to_rgba(z)
-
 ## view
 crs = ccrs.NorthPolarStereo()
 crs_proj4 = crs.proj4_init
@@ -96,40 +90,26 @@ polygons = [v for v in regions.geoms]
 gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
 gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
 
-## notes on: index = range(len(polygons))
-# less polygons 196 than stations 200
-# POINT (49.47658 54.18786)     3
-# POINT (49.52358 54.20081)     3
-# 172   Russian Federation	VK-50	    54.187856	49.476581
-# 175   Russian Federation	SM-3	    54.187856	49.476581
-# 179   Russian Federation	MIR.M1	    54.187856	49.476581
-# 178   Russian Federation	BOR-60	    54.200812	49.523576
-# 196   Russian Federation	RBT-10/2    54.200812	49.523576
-# 197   Russian Federation	RBT-6	    54.200812	49.523576
-# => overlap
-## MANUAL FIX
-z = z.tolist()
-z[172] = z[172] + z[175] + z[179]
-z[178] = z[178] + z[196] + z[197]
-z = [v for k, v in enumerate(z) if k not in [175, 179, 178, 197]]
-colos = m.to_rgba(z)
-
-points = MultiPoint([v for k, v in enumerate(zip(sources['Longitude'], sources['Latitude'])) if k not in [175, 179, 178, 197]])
-regions = voronoi_diagram(points)
-polygons = [v for v in regions.geoms]
-gdf = gpd.GeoDataFrame(index = range(len(polygons)), geometry = polygons, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
-gdf2 = gdf.to_crs(crs_proj4) # project points to new CRS
-# todo: group very small points or patches
-
 ## markers
 geometry = [Point(xy) for xy in zip(sources['Longitude'], sources['Latitude'])]
 gdf3 = gpd.GeoDataFrame(sources, geometry = geometry, crs = 'EPSG:4326') # EPSG 4326 - WGS 84
 gdf4 = gdf3.to_crs(crs_proj4) # project points to new CRS
 
-
 ## background
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 world2 = world.to_crs(crs_proj4)
+
+## add values for overlaping points
+# todo: group very close regions
+poly_pts = [[k for k, pt in enumerate(geometry) if pol.contains(pt)] for pol in polygons]
+poly_colors = [z[idx].sum() for idx in poly_pts]
+
+# color map
+#norm = mplc.Normalize(vmin = np.percentile(z, 5), vmax = np.percentile(z, 95))
+norm = mplc.Normalize(vmin = 0, vmax = 100)
+cmap = cm.jet
+m = cm.ScalarMappable(norm = norm, cmap = cmap)
+colos = m.to_rgba(z)
 
 ## plot
 fig, ax = plt.subplots(subplot_kw = {'projection': crs}, figsize = (16, 16))
@@ -158,10 +138,6 @@ plt.close(fig)
 # https://stackoverflow.com/questions/55646598/polar-stereographic-projection-of-geopandas-world-map
 
 ## TODO
-# keep only most consecutive days with same obs stations available
 # animation
 # https://underworldcode.github.io/stripy/2.0.5b2/FrontPage.html
 # https://coolum001.github.io/voronoi.html
-
-
-
