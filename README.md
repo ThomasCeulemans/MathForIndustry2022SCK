@@ -2,7 +2,12 @@
 
 Repository for the modelling code.
 
-python dependencies:
+python dependencies for computation:
 - pandas
 - numpy
 - scipy
+
+for visualizing the data:
+- shapely
+- geopandas
+- cartopy
