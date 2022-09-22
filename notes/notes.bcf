@@ -2185,6 +2185,8 @@
     <bcf:citekey order="1">Golub2013</bcf:citekey>
     <bcf:citekey order="2">deMeutter2022uncertainty</bcf:citekey>
     <bcf:citekey order="3">Nocedal2006</bcf:citekey>
+    <bcf:citekey order="4">Nocedal2006</bcf:citekey>
+    <bcf:citekey order="5">Nocedal2006</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

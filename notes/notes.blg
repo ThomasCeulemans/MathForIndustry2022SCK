@@ -1,17 +1,17 @@
 [0] Config.pm:304> INFO - This is Biber 2.14 (beta)
 [0] Config.pm:307> INFO - Logfile is 'notes.blg'
-[68] biber:322> INFO - === Thu Sep 22, 2022, 09:37:48
-[81] Biber.pm:415> INFO - Reading 'notes.bcf'
-[132] Biber.pm:943> INFO - Found 3 citekeys in bib section 0
-[142] Biber.pm:4256> INFO - Processing section 0
-[142] Utils.pm:75> INFO - Globbing data source 'library.bib'
-[142] Utils.pm:91> INFO - Globbed data source 'library.bib' to library.bib
-[150] Biber.pm:4455> INFO - Looking for bibtex format file 'library.bib' for section 0
-[150] bibtex.pm:1653> INFO - LaTeX decoding ...
-[154] bibtex.pm:1471> INFO - Found BibTeX data source 'library.bib'
-[198] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[199] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[199] Biber.pm:4084> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
-[199] Biber.pm:4090> INFO - No sort tailoring available for locale 'en-US'
-[202] bbl.pm:652> INFO - Writing 'notes.bbl' with encoding 'UTF-8'
-[203] bbl.pm:755> INFO - Output to notes.bbl
+[62] biber:322> INFO - === Thu Sep 22, 2022, 12:53:31
+[72] Biber.pm:415> INFO - Reading 'notes.bcf'
+[120] Biber.pm:943> INFO - Found 3 citekeys in bib section 0
+[130] Biber.pm:4256> INFO - Processing section 0
+[130] Utils.pm:75> INFO - Globbing data source 'library.bib'
+[131] Utils.pm:91> INFO - Globbed data source 'library.bib' to library.bib
+[137] Biber.pm:4455> INFO - Looking for bibtex format file 'library.bib' for section 0
+[138] bibtex.pm:1653> INFO - LaTeX decoding ...
+[141] bibtex.pm:1471> INFO - Found BibTeX data source 'library.bib'
+[182] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[182] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[182] Biber.pm:4084> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[182] Biber.pm:4090> INFO - No sort tailoring available for locale 'en-US'
+[184] bbl.pm:652> INFO - Writing 'notes.bbl' with encoding 'UTF-8'
+[186] bbl.pm:755> INFO - Output to notes.bbl

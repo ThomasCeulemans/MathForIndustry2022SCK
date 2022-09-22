@@ -220,121 +220,9 @@ Using this weighted vector of emissions instead of $\tilde{x}$ in \cref{eq: init
 \hat{y} = M_{shift} W (S^{-1} x \otimes \vb{1}_{365})
 .\end{equation}
 In this expression, the unknown is $W$ and should be fit to the data. 
-% There are a plethora of numerical techniques for solving linear equations where the unknown is a matrix.
-% In the following, we provide a theoretical description of a system that can be solved for $W$.
-
-% We can put constraints on $W$ of the form $W \in \mathcal{W}$, where $\mathcal{W}$ is some set of constrained diagonal matrices. Suppose we have a parametrisation $\Gamma: \mathbb{R}^{k} \rightarrow \mathcal{W}, u \mapsto \Gamma(u)$. 
-% In this case, \cref{eq: time-evolving model concise} can be reformulated as a linear operation applied to $\Gamma(u)$ as follows:
-% $$
-% \hat{y} = ((S^{-1} x \otimes \vb{1}_{365})^T \otimes M_{shift}) \mathrm{vec}\, \Gamma(u)
-% .$$
-% If $\Gamma$ is a linear map, the above is a linear expression in $u$. Then, the minimisation of $\norm{y - \hat{y}}^2$ can be solved using numerical linear algebra.
-
-\section{Fitting the model}
-\subsection{Regularisation}
-The indices $i = 1,\dots,n$ are partitioned as a disjoint union $\mathcal{I}_{det} \cup \mathcal{I}_{0}$ where $\mathcal{I}_0$ contains the indices of non-detection events. Let $P_{det}$ be the linear map that removes the rows of a matrix that correspond to $\mathcal{I}_0$. We can measure the accuracy as $\norm{\log.(P_{det} \hat{y})}^2$ where $\log.(\cdot)$ is the elementwise \emph{natural} logarithm. The simplicity of $W$ can be measured as $\norm{\log W}^2$. If we forget about non-detections, we have the cost function 
-$$
-\min_{W \text{ diagonal}} f(W) =
-\underbrace{\frac{1}{2}\norm{\log.(P_{det} M_{shift} W \tilde{x})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
-.$$
-In order to optimise $f$ numerically, we need to be able to measure changes to $W$. We do this implicitly by parametrising $W = e^{\mathrm{diag}\, v}$ for some vector $v$. If we apply an absolute change $v' := v + \Delta v$ in numerical optimisation, this corresponds to the relative change $W' = W e^{\mathrm{diag} \Delta v}$. 
-Reformulating the cost function gives 
-$$
-\min_{v} f(v) =
-\underbrace{\frac{1}{2}\norm{\log.(P_{det} M_{shift} e^{\mathrm{diag}\, v} \tilde{x})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{v}^2}_{\text{deviation from average emission}}
-.$$
 
 
-
-\begin{proposition}
-    Let $\hat{z}$ be the vector $[\hat{z}_1\,\,\dots\,\,\hat{z}_n]^T$ where 
-    $$
-    \hat{z}_i = \begin{cases}
-        \frac{\log \hat{y}_i}{\hat{y}_i} & \text{if observation $i$ is a detection} \\
-        0 & \text{if observation $i$ is a non-detection} 
-    \end{cases}
-    .$$
-    Then
-    $$
-    \mathrm{grad}_{v} f(v) = e^v \odot (M_{shift}^T \hat{z}) \odot \tilde{x} + \lambda v
-    .$$
-\end{proposition}
-\begin{proof}
-
-Let $U = \mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\, W(v) = U e^v$ where $e^v$ denotes elementwise exponentiation.
-Define $$
-G(v) :=
-P_{det} \hat{y}_i
-=
-P_{det} M_{shift} W(v) \tilde{x}
-\quad\text{and}\quad
-F(v) := \log.(G(v))
-.$$
-Then 
-$$
-G(v) = P_{det} M_{shift} W(v) \tilde{x}
-=
-(\tilde{x}^T \otimes P_{det} M_{shift}) \mathrm{vec} W(v)
-=
-\underbrace{(\tilde{x}^T \otimes P_{det}M_{shift}) U}_A e^v
-$$
-so that 
-$$
-\frac{\partial G}{\partial v} = A e^{\mathrm{diag}\, v}
-.$$
-Differentiating $F(v) = \log.(G(v))$ gives:
-$$
-\frac{\partial F}{\partial v}
-=
-\frac{\partial}{\partial v} \log.(G(v))
-=
-\mathrm{diag}\,(G(v))^{-1} \frac{\partial G}{\partial v}
-=
-\mathrm{diag}\,(G(v))^{-1} A e^{\mathrm{diag}\, v }
-.$$
-Write $z := P_{det} \hat{z}$.
-We can interpret $z$ as the vector obtained by applying the map $x \mapsto (\log x) / x$ elementwise to $G(v)$.
-Using standard differentiation rules for the squared norm of a vector-valued function, we obtain
-\begin{align*}
-\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right) =\left(\frac{\partial F}{\partial v}\right)^T F(v)
-&= e^{\mathrm{diag}\, v} A^T \mathrm{diag}(G(t))^{-1} \log.(G(t)) \\
-&= e^{\mathrm{diag}\, v} A^T z \\
-&= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes (P_{det} M_{shift})^T) z \\
-&= e^{\mathrm{diag}\, v} U^T (P_{det} M_{shift})^T z \tilde{x}^T \\
-&= e^{\mathrm{diag}\, v} U^T M_{shift}^T P_{det}^T P_{det} \hat{z} \tilde{x}^T \\
-&= e^{\mathrm{diag}\, v} U^T M_{shift}^T \hat{z} \tilde{x}^T
-\end{align*}
-where the last equality follows from the fact that $P_{det}^T P_{det}$ is the map that sets the rows corresponding to the non-detection events to zero. 
-By construction of $U$, the map $U^T$ projects its argument orthogonally onto the diagonal matrices and gives the diagonal element. The orthogonal projection of a matrix onto the diagonal matrices is obtained by setting the off-diagonal elements to zero. The diagonal elements of $M_{shift}^T \hat{z} \tilde{x}^T$ are $(M_{shift}^T \hat{z}) \odot \tilde{x}$, so that the above simplifies to
-$$
-\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right)
-=
-e^{\mathrm{diag}\, v} \left((M_{shift}^T \hat{z}) \odot \tilde{x}\right)
-=
-e^v \odot (M_{shift}^T \hat{z}) \odot \tilde{x}
-.$$
-
-The foregoing gives the derivative of the first term in $f(W)$. The gradient of the second term can is simply $\lambda v$.
-
-\end{proof}
-For even more evidence, there is a Julia script in the repository that checks this formula against the result obtained from automatic differentiation (using simplified mock data). The result is correct up to machine precision.
-
-\subsection{Constrained optimisation (similar idea as regularisation)}
-Constrained optimisation is similar to using regularisation.
-Suppose that the number of components in $\tilde{x}$ is $m T$ (where $m$ is the number of sources and $T$ is the number of days).
-If we want to bound the average of $(\log w_{ij})^2$ by some value $\delta^2$, then we have the constrained optimisation problem
-\begin{align*}
-    \min\quad & \frac{1}{2} \norm{\log.(P_{det} M_{shift} W \tilde{x})}^2 \\
-    \text{s.t.}\quad & \frac{1}{mT} \norm{\log W}^2 \le \delta^2
-\end{align*} 
-or equivalently 
-\begin{align*}
-    \min\quad & \frac{1}{2} \norm{\log.(P_{det} M_{shift} e^{\mathrm{diag}\, v} \tilde{x})}^2 \\
-    \text{s.t.}\quad & \frac{1}{mT} \norm{v}^2 \le \delta^2
-\end{align*}
-which can be solved using very similar ideas as the regularisation section.
-
-\section{Correcting for non-detections}
+\section{Correction for non-detections}
 
 To correct for non-detections, we apply the transformation $h$ from \cite{deMeutter2022uncertainty}. This is given by the continuously differentiable function
 $$
@@ -355,17 +243,41 @@ h\left(\hat{y}\right) = \begin{cases}
 $$
 and $h(y) = 1$. For the detection events, we do not have the $MDC$ and cannot calculate $h$ exactly. For the detection events, we can approximate $h$ by the identity map.
 
-Now a good cost function is
+\section{Fitting the model}
+In the above, we argued that, the prediction is accurate if $h(\hat{y})$ is close to one, where $\hat{y}$ is the predicted concentration. This is equivalent to $\log^2(h(\hat{y}))$ being small. Notice that this penalises overestimates by a factor $\alpha$ as much as underestimates by a factor $\alpha$. That is, 
+$$
+\log^2(\alpha) = \log^2(\alpha^{-1})
+.$$
+The average prediction error over all predictions is $\sum_{i=1}^n \log^2(h(\hat{y}_i)) = \norm{\log h(\hat{y})}^2$. This will be the first criterion for optimality of the model.
+
+The second criterion is the ratio between the daily emissions and the average emission for each source, i.e. the factors $W$. In a similar vein as the above, the size of $W$ can be measured as $\norm{\log W}^2$ where $\norm{\cdot}$ is the Frobenius norm\footnote{Since $W$ is a diagonal matrix, the matrix logarithm $\log W$ is simply the diagonal matrix with $\log w_{1,1}, \log w_{1,2}, \dots$ on the diagonal. Hence, $\norm{\log W}^2 = \log^2 w_{1,1} + \log^2 w_{1,2} + \dots$}. 
+
+To balance these two criteria, we measure the quality of the model as 
+\begin{equation}
+    \label{eq: cost function regularised}
+f(W) := 
+\underbrace{\frac{1}{2}\norm{\log h.(\hat{y})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
+\quad\text{where}\quad 
+\hat{y} = M_{shift} W \tilde{x}
+\end{equation}
+where $\lambda \ge 0$ is a regularisation parameter.
+
+To optimise $f$ numerically, we will parametrise $W$ as $W = e^{\mathrm{diag}\, v}$ where $v = [v_1, v_2,\dots]$ is some vector and $e^{\mathrm{diag}\, v}$ is the diagonal matrix with $[e^{v_1}, e^{v_2},\dots]$ on the diagonal. The motivation for doing this is twofold:
+\begin{enumerate}
+    \item It ensures that $W$ remains strictly positive. In particular, the diagonal elements of $W$ can only tend towards zero if $v_j \rightarrow -\infty$ for some $i$. 
+    \item It implicitly measures changes to $W$ in a relative sense. If the optimisation algorithm performs a linear update $v_{k+1} = v_k + \Delta v$, this corresponds to a relative update $W_{k+1} = W_k e^{\mathrm{diag}\, \Delta v}$.
+\end{enumerate}
+
+Thus, in practice, we are interested in the optimisation problem
 $$
 \min_{v} f(v) =
-\underbrace{\frac{1}{2}\norm{\log h.(\hat{y})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{v}^2}_{\text{deviation from average emission}}
+\frac{1}{2}\norm{\log h.(\hat{y})}^2 + \frac{1}{2}\lambda \norm{v}^2
 \quad\text{where}\quad 
 \hat{y} = M_{shift} e^{\mathrm{diag}\, v} \tilde{x}
-$$
-where $\log h.$ is the elementwise application of $x \mapsto \log h(x)$ to a vector.
-
+.$$
+Most optimisation algorithms require at least the gradient of $f$. This is given by the following:
 \begin{proposition}
-    Let $g$ be the vector defined elementwise by 
+    Let $g = [g_1, \dots, g_n]$ be the vector defined elementwise by 
     $$
     g_i = \frac{\log h(\hat{y}_i)}{h(\hat{y}_i)} \frac{\mathrm{d}}{\mathrm{d}\hat{y}_i} h(\hat{y}_i)
     .$$
@@ -373,6 +285,7 @@ where $\log h.$ is the elementwise application of $x \mapsto \log h(x)$ to a vec
     $$
     \mathrm{grad}\, f(v) = e^v \odot (M_{shift}^T g) \odot \tilde{x} 
     $$
+    where $e^v$ denotes elementwise exponentiation and $\odot$ is the Hadamard (elementwise) product.
 \end{proposition}
 \begin{proof}
 
@@ -429,7 +342,7 @@ The foregoing gives the derivative of the first term in $f(W)$. The gradient of 
 \section{Further work}
 \begin{itemize}
     \item For certain emission sources in certain periods, there is an expected correlation between the emission at time $t$ and at time $t + 1, t + 2, \dots$. We can add a constraint on the autocorrelation.
-    \item Change the parametrisation to something like this: 
+    \item Time-correlation could be measured by parameterising the model as follows: 
     \begin{align*}
         x_1^{2 \text{ Jan } 2014} &= \alpha_1^{(1)} x_1^{1 \text{ Jan } 2014} \\
         x_1^{3 \text{ Jan} 2014} &= \alpha_2^{(1)} x_1^{2 \text{ Jan } 2014} \\
@@ -437,7 +350,22 @@ The foregoing gives the derivative of the first term in $f(W)$. The gradient of 
     \end{align*}
     with a constraint like $\alpha_{\min} \le \prod_{t=1}^T \alpha_t^{(j)} \le \alpha_{\max}$ for all $T$ and all $j = 1,\dots,m$. However, this would be difficult to implement. In addition, the complexity of inequality constrained optimisation can be combinatorial in the number of constraints if an active set method is used \cite{Nocedal2006}.
 
-    \item How do you store the sparse matrix $M_{shift}$ in a computer? Most programming languages have data structures for large sparse matrices?
+    \item For the sake of simplicity, the current implementation does not store $M_{shift}$ in memory in a data structure for large and sparse matrices. This could be changed to improve memory use and/or computation time.
+    
+    \item Other numerical optimisation algorithms may be more efficient or have better convergence properties. For instance, the Gauss-Newton and Levenberg-Marquardt methods are specifically designed for optimising the squared norm of a vector-valued function, but may require a large amount of memory \cite[Section 10.3]{Nocedal2006}.
+    
+    \item Standard software libraries support optimisation with constraints. This is an alternative to regularisation and may be more interpretable.
+    Suppose that the number of components in $\tilde{x}$ is $m T$ (where $m$ is the number of sources and $T$ is the number of days).
+    If we want to bound the average of $(\log w_{ij})^2$ by some value $\delta^2$, then we have the constrained optimisation problem
+    \begin{align*}
+        \min\quad & \frac{1}{2} \norm{\log h.(\hat{y})}^2 \\
+        \text{s.t.}\quad & \frac{1}{mT} \norm{\log W}^2 \le \delta^2
+    \end{align*} 
+    which can be solved using similar ideas as those developed above. The prototypical constrained optimisation method (such as an active set method) would iterate towards a critical point of the Lagrangian
+    $$
+    \mathcal{L}(W, \lambda) = \frac{1}{2} \norm{\log h.(\hat{y})}^2 + \lambda\left(\frac{1}{mT} \norm{\log W}^2 - \delta^2\right)
+    $$
+    in which case the computational cost would be comparable to optimising \cref{eq: cost function regularised}. A more detailed explanation of constrained optimisation and the Lagrangian is found in \cite{Nocedal2006}.
 \end{itemize}
 
 \printbibliography
