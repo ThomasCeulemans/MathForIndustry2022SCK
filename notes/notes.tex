@@ -224,7 +224,8 @@ In this expression, the unknown is $W$ and should be fit to the data.
 
 \section{Correction for non-detections}
 
-To correct for non-detections, we apply the transformation $h$ from \cite{deMeutter2022uncertainty}. This is given by the continuously differentiable function
+Sometimes, the concentration at a measurement station is below the minimum detectable concentration (MDC). The corresponding measurements are $y_i = 0$.
+To account for non-detections, we apply the transformation $h$ from \cite{deMeutter2022uncertainty}. This is given by the continuously differentiable function
 $$
 h(y) = \begin{cases}
     \frac{y^2}{4MDC} + MDC &\quad \text{if } y \le 2MDC \\
@@ -360,6 +361,19 @@ With this information, we can optimise \cref{eq: cost function parameterised} us
 
 \section{Further work}
 \begin{itemize}
+    \item Standard software libraries support optimisation with constraints. This is an alternative to regularisation and may be more interpretable.
+    Suppose that the number of components in $\tilde{x}$ is $m T$ (where $m$ is the number of sources and $T$ is the number of days).
+    If we want to bound the average of $(\log w_{ij})^2$ by some value $\delta^2$, then we have the constrained optimisation problem
+    \begin{align*}
+        \min\quad & \frac{1}{2} \norm{\log h.(\hat{y})}^2 \\
+        \text{s.t.}\quad & \frac{1}{mT} \norm{\log W}^2 \le \delta^2
+    \end{align*} 
+    which can be solved using similar ideas as those developed above. The prototypical constrained optimisation method (such as an active set method) would iterate towards a critical point of the Lagrangian
+    $$
+    \mathcal{L}(W, \lambda) = \frac{1}{2} \norm{\log h.(\hat{y})}^2 + \lambda\left(\frac{1}{mT} \norm{\log W}^2 - \delta^2\right)
+    $$
+    in which case the computational cost would be comparable to optimising \cref{eq: cost function regularised}. A more detailed explanation of constrained optimisation and the Lagrangian is found in \cite{Nocedal2006}.
+    \item Currently, there is no constraint saying that, for every emission source $j$, the geometric mean of the emission should be the reported average $x_j$. This can be enforced with a constraint like $\prod_{t} w_{jt} = 1$ for all sources $j=1,\dots,m$. With the parametrisation $w = e^v$, this is equivalent to the linear constraint $\sum_{t} v_{jt} = 0$. Since this is a linear constraint, it can be handled relatively easily.
     \item For certain emission sources in certain periods, there is an expected correlation between the emission at time $t$ and at time $t + 1, t + 2, \dots$. We can add a constraint on the autocorrelation.
     \item Time-correlation could be measured by parameterising the model as follows: 
     \begin{align*}
@@ -373,18 +387,6 @@ With this information, we can optimise \cref{eq: cost function parameterised} us
     
     \item Other numerical optimisation algorithms may be more efficient or have better convergence properties. For instance, the Gauss-Newton and Levenberg-Marquardt methods are specifically designed for optimising the squared norm of a vector-valued function, but may require a large amount of memory \cite[Section 10.3]{Nocedal2006}.
     
-    \item Standard software libraries support optimisation with constraints. This is an alternative to regularisation and may be more interpretable.
-    Suppose that the number of components in $\tilde{x}$ is $m T$ (where $m$ is the number of sources and $T$ is the number of days).
-    If we want to bound the average of $(\log w_{ij})^2$ by some value $\delta^2$, then we have the constrained optimisation problem
-    \begin{align*}
-        \min\quad & \frac{1}{2} \norm{\log h.(\hat{y})}^2 \\
-        \text{s.t.}\quad & \frac{1}{mT} \norm{\log W}^2 \le \delta^2
-    \end{align*} 
-    which can be solved using similar ideas as those developed above. The prototypical constrained optimisation method (such as an active set method) would iterate towards a critical point of the Lagrangian
-    $$
-    \mathcal{L}(W, \lambda) = \frac{1}{2} \norm{\log h.(\hat{y})}^2 + \lambda\left(\frac{1}{mT} \norm{\log W}^2 - \delta^2\right)
-    $$
-    in which case the computational cost would be comparable to optimising \cref{eq: cost function regularised}. A more detailed explanation of constrained optimisation and the Lagrangian is found in \cite{Nocedal2006}.
 \end{itemize}
 
 \printbibliography
