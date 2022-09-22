@@ -3,23 +3,38 @@
 \usepackage[margin=1.5cm]{geometry}
 \usepackage{biblatex}
 
-\title{Notes}
-\author{SCK team}
+\title{Screening of airborne radioxenon measurements for Nuclear-Test-Ban Treaty verification}
+\author{Jerome Alhage, Jelle Bosmans, Thomas Ceulemans, Nick Dewaele}
 \date{}
 
 \newtheorem{proposition}{Proposition}
+\newtheorem{remark}[proposition]{Remark}
 
 \addbibresource{library.bib}
 
 \begin{document}
     \maketitle
 
-\section{Notation}
+    \begin{abstract}
+        We extend a simulation model for radioxenon emissions by inferring daily emissions of sources in the Northern Hemisphere. This is done by numerical optimisation of the relative prediction error over the daily emissions.
+    \end{abstract}
+
+\section{Introduction}
+In this paper, we adapt a simulation model of radioxenon emissions used at SCK-CEN for the verification of the Nuclear-Test-Ban Treaty. This model operates on a map of $m = 200$ civilian sources of radioxenon with their average daily emissions $x_1,\dots,x_m$. A list of $n = 4636$ measurements $[y_1,\dots,y_n]$ at stations spread across the Northern Hemisphere is given. The relationship between the emissions and the measured concentrations is given by a linear model 
+\begin{equation}
+    \label{eq: initial model}
+y_i \approx
+\hat{y}_i = \sum_{j=1}^m \sum_{\Delta = 1}^{15}  M_{i,(j,\Delta)} \frac{x_{j}}{s_j}
+\end{equation}
+where the sensitivities $M_{i,(j, \Delta)}$ are obtained from backward simulation of the so-called \emph{xenon weather}. The scaling factors $s_j$ arise from the simulation on a mesh of the Northern Hemisphere.
+The \emph{sensitivity matrices} $M_{i,(j,\Delta)}$ can be interpreted as the contribution of the emission from source $j$ from $\Delta$ days before the measurement to the $i$'th concentration measurement in the dataset. The contributions of more than $15$ days before the measurement are neglected.
+
+\subsection{Outline}
+The above assumes that the xenon emission is constant for every source. We adapt this model in \cref{sec: model} so that daily emissions are taken into account. In \cref{sec: nondetections}, we discuss the use of a transformation from \cite{deMeutter2022uncertainty} to model the accuracy in a non-detection event.
+In \cref{sec: optimisation}, we explain a method to fit the extended model to the data. Given the time constraints of this project, the optimality criterion was deliberately kept simple. Numerical data in \cref{sec: numerical results} show that the average prediction error can be increased. We conclude in \cref{sec: further work} with suggestions make the model more realistic and improve computational aspects.
+
+\subsection{Notation}
 \begin{itemize}
-    \item Average emission per source: $x_1,\dots,x_m$ where $m = 200$.
-    \item Measured concentrations $y_1,\dots,y_n$ where $n = 4636$. These are consecutive measurements for several measurement stations. 
-    \item $M_{i,(j,\Delta)}$ is a block in the sensitivity matrix $M$ that represents the contribution of $x_j$ from $\Delta$ days ago to the observed concentration $y_i$.
-    \item Scaling factors $s_1,\dots,s_m$ (in \texttt{scalings.csv}). These are put in a diagonal matrix $S$.
     \item $\vb{1}_q = [1\,\, \dots\,\, 1]^T \in \mathbb{R}^q$ is the constant vector consisting of only ones.
     \item $\odot$ is the Hadamard (i.e.\, elementwise) product, given by $(AB)_{ij} = A_{ij} B_{ij}$.
     \item $\mathrm{vec}: \mathbb{R}^{p \times q} \rightarrow \mathbb{R}^{pq}$ is the vectorisation operator. It can be understood as stacking the columns of a matrix in one long vector. 
@@ -77,13 +92,11 @@
 \end{itemize}
 
 \section{Model}
-\subsection{Initial model}
-With $n=1,\dots,4636$ and $m = 1,\dots,200$, the initial model is
-$$
-y_i \approx
-\hat{y}_i = \sum_{j=1}^m \sum_{\Delta = 1}^{15}  M_{i,(j,\Delta)} \frac{x_{j}}{s_j}
-.$$
-That is, for each emission source $j$, we simulate the contribution of 15 days, and add this together for all $j$. A matrix formulation of this reads as follows:
+\label{sec: model}
+
+\subsection{Reformulation of the baseline model}
+
+\Cref{eq: initial model} can be formulated as follows:
 \begin{align}
     \label{eq: initial model concise} 
 \begin{bmatrix}
@@ -113,11 +126,7 @@ That is, for each emission source $j$, we simulate the contribution of 15 days, 
     M_{m,(1,1)} & M_{m,(1,2)} & \cdots & M_{m,(n,15)} \\
 \end{bmatrix}
 \left( 
-     \begin{bmatrix}
-        s_1 & & \\
-         & \ddots & \\
-        & & s_n
-     \end{bmatrix}^{-1}
+     S^{-1}
      \begin{bmatrix}
         x_1 \\
         \vdots \\
@@ -126,23 +135,22 @@ That is, for each emission source $j$, we simulate the contribution of 15 days, 
      \otimes \vb{1}_{15}
 \right)
 \nonumber
-.\end{align}
+\end{align}
+where $S = \mathrm{diag}([s_1,\dots,s_m])$.
+In this section, we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{T}$ where $T = 365 + 15 = 380$. This is a vector of length $mT$ that gives the emission from the most recent day to $T$ days in the past for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is a constant vector of length $T$.
 
-Now we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{365}$. This is a vector of length $365 \times 200$ that gives the emission from day 1 to day 365 for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is a constant vector of length $365$.
-
-We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have a linear relationship that looks something like this:
+We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}$ instead of $S^{-1} x \otimes \vb{1}_{15}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have the linear relationship
 $$
         \hat{y}_i
     =
     \begin{bmatrix}
         \cdots & M_{i,(1,1)} & \dots & M_{i,(1,15)} & 0 & \dots & M_{i,(2,1)} & \dots & M_{i,(2,15)} & \dots
     \end{bmatrix}
-    (S^{-1} x \otimes \vb{1}_{365})
-.
-$$
+    \tilde{x}
+.$$
 The presence of zeros in the matrix indicates that emissions from the distant past do not contribute to the observed concentrations.
 
-Now assume that in each station, there is one observation per day, named $y_{kt}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then the full system reads as follows:
+Assume for the sake of simplicity that in each station, there is one observation per day, indexed as $y_{k,t}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then the full system reads as follows:
 \begin{equation}
     \label{eq: initial model 365 days}
 \begin{bmatrix}
@@ -165,25 +173,15 @@ Now assume that in each station, there is one observation per day, named $y_{kt}
 \end{bmatrix}
 }_{ := M_{shift}}
 \tilde{x}
-\end{equation}
-where 
-$$
-\tilde{x} := S^{-1} x \otimes \vb{1}_{365}
-=
-\begin{bmatrix}
-    s_1^{-1} x_1 \\
-    \vdots \\
-    s_1^{-1} x_1 \\ 
-    s_2^{-1} x_2 \\
-    \vdots \\ 
-    s_m^{-1} x_m
-\end{bmatrix}
-.$$
+.\end{equation}
 
-We could reorganise the vector $\tilde{x}$ to the transposed expression $\vb{1}_{365} \otimes (S^{-1} x)$, which is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. This has the effect of permuting the rows and columns of $M_{shift}$. A permutation of the variables gives a model that is essentially the same as \cref{eq: initial model 365 days} but may have advantages when it comes to implementation or computational efficiency. We will not consider this.
+\begin{remark}
+    As an alternative to using $\tilde{x} = S^{-1} x \otimes \vb{1}_T$, one could use the permuted expression $\vb{1}_{T} \otimes (S^{-1} x)$. This is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. These permutations can be compensated by the inverse permutation on the columns and rows of $M_{shift}$, respectively. The resulting model is essentially identical to \cref{eq: initial model 365 days} but may have advantages when it comes to implementation in software. We will not consider this.
+\end{remark}
 
 \subsection{Model with time-dependent correction to the emissions}
-If we weigh each day and each emission source by some factor, we are applying a transformation
+Daily emissions can be modelled by multiplying the average emission of source $j$ by some scaling factor $w_{j,t}$. This corresponds to the 
+transformation
 $$
 \begin{bmatrix}
     s_1^{-1} x_1 \\
@@ -197,32 +195,22 @@ $$
 \begin{bmatrix}
     w_{1,1} s_1^{-1} x_1 \\
     \vdots \\
-    w_{1,365} s_1^{-1} x_1 \\ 
+    w_{1,T} s_1^{-1} x_1 \\ 
     w_{2,1} s_2^{-1} x_2 \\
     \vdots \\ 
-    w_{m, 365} s_m^{-1} x_m
+    w_{m, T} s_m^{-1} x_m
 \end{bmatrix}
 $$
-which can be written concisely as 
-$$
-W (S^{-1} x \otimes \vb{1}_{365})
-\quad\text{where}\quad 
-W = \begin{bmatrix}
-    w_{1,1} & 0 & \cdots & 0 \\
-    0 & w_{1,2} & \cdots & 0 \\
-    \vdots & \vdots & \ddots & 0 \\
-    0 & 0 & \cdots & w_{m, 365}
-\end{bmatrix}
-.$$
+which can be written concisely as $W\tilde{x}$ where $W = \mathrm{diag}([w_{1,1}, w_{1,2},\dots,w_{m,T}])$.
 Using this weighted vector of emissions instead of $\tilde{x}$ in \cref{eq: initial model 365 days} gives
 \begin{equation}
     \label{eq: time-evolving model concise}
-\hat{y} = M_{shift} W (S^{-1} x \otimes \vb{1}_{365})
+\hat{y} = M_{shift} W \tilde{x}
 .\end{equation}
-In this expression, the unknown is $W$ and should be fit to the data. 
-
+In the next section, we present a method to fit the unknown factors $W$ to the data.
 
 \section{Correction for non-detections}
+\label{sec: nondetections}
 
 Sometimes, the concentration at a measurement station is below the minimum detectable concentration (MDC). The corresponding measurements are $y_i = 0$.
 To account for non-detections, we apply the transformation $h$ from \cite{deMeutter2022uncertainty}. This is given by the continuously differentiable function
@@ -245,11 +233,13 @@ $$
 and $h(y) = 1$. For the detection events, we do not have the $MDC$ and cannot calculate $h$ exactly. For the detection events, we can approximate $h$ by the identity map.
 
 \section{Fitting the model}
-In the above, we argued that, the prediction is accurate if $h(\hat{y})$ is close to one, where $\hat{y}$ is the predicted concentration. This is equivalent to $\log^2(h(\hat{y}))$ being small. Notice that this penalises overestimates by a factor $\alpha$ as much as underestimates by a factor $\alpha$. That is, 
+\label{sec: optimisation}
+
+In the above, we argued that the prediction is accurate if $h(\hat{y})$ is close to one, where $\hat{y}$ is the predicted concentration. This is equivalent to $\log^2(h(\hat{y}))$ being small. Notice that this penalises overestimates by a factor $\alpha$ as much as underestimates by a factor $\alpha$. That is, 
 $$
 \log^2(\alpha) = \log^2(\alpha^{-1})
 .$$
-The average prediction error over all predictions is $\sum_{i=1}^n \log^2(h(\hat{y}_i)) = \norm{\log h(\hat{y})}^2$. This will be the first criterion for optimality of the model.
+The average prediction error over all predictions is $\sum_{i=1}^n \log^2(h(\hat{y}_i)) = \norm{\log h.(\hat{y})}^2$, where $\log h.$ is the elementwise application of $x \mapsto \log h(x)$. This will be the first criterion for optimality of the model.
 
 The second criterion is the ratio between the daily emissions and the average emission for each source, i.e. the factors $W$. In a similar vein as the above, the size of $W$ can be measured as $\norm{\log W}^2$ where $\norm{\cdot}$ is the Frobenius norm\footnote{Since $W$ is a diagonal matrix, the matrix logarithm $\log W$ is simply the diagonal matrix with $\log w_{1,1}, \log w_{1,2}, \dots$ on the diagonal. Hence, $\norm{\log W}^2 = \log^2 w_{1,1} + \log^2 w_{1,2} + \dots$}. 
 
@@ -357,9 +347,11 @@ The foregoing gives the derivative of the first term in the definition of $f(v)$
 
 With this information, we can optimise \cref{eq: cost function parameterised} using any gradient-based optimisation method. We decided on limited-memory BFGS \cite{Nocedal2006}, which is implimented in SciPy \cite{virtanen2020scipy}.
 
-
+\section{Numerical results}
+\label{sec: numerical results}
 
 \section{Further work}
+\label{sec: further work}
 \begin{itemize}
     \item Standard software libraries support optimisation with constraints. This is an alternative to regularisation and may be more interpretable.
     Suppose that the number of components in $\tilde{x}$ is $m T$ (where $m$ is the number of sources and $T$ is the number of days).

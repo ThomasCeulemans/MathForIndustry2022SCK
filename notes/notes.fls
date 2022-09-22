@@ -172,6 +172,8 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman9-regular.luc
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman9-bold.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman12-bold.luc
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmr7.tfm
@@ -191,11 +193,12 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
-INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmmono10-regular.luc
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-italic.luc
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm
 INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-bold.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman7-regular.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman5-regular.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman8-regular.luc
@@ -207,8 +210,6 @@ INPUT /usr/share/texlive/texmf-dist/tex/latex/doublestroke/Udsrom.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/doublestroke/dsrom10.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/doublestroke/dsrom8.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/doublestroke/dsrom8.tfm
-INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-italic.luc
-INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-bold.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmromancaps10-regular.luc
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.aux
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.run.xml
