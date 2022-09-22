@@ -256,13 +256,26 @@ To balance these two criteria, we measure the quality of the model as
 \begin{equation}
     \label{eq: cost function regularised}
 f(W) := 
-\underbrace{\frac{1}{2}\norm{\log h.(\hat{y})}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
+\underbrace{\frac{1}{2}\norm{\log h.(\hat{y}(W))}^2}_{\text{prediction error}} + \underbrace{\frac{1}{2}\lambda \norm{\log W}^2}_{\text{deviation from average emission}}
 \quad\text{where}\quad 
-\hat{y} = M_{shift} W \tilde{x}
+\hat{y}(W) = M_{shift} W \tilde{x}
 \end{equation}
 where $\lambda \ge 0$ is a regularisation parameter.
 
-To optimise $f$ numerically, we will parametrise $W$ as $W = e^{\mathrm{diag}\, v}$ where $v = [v_1, v_2,\dots]$ is some vector and $e^{\mathrm{diag}\, v}$ is the diagonal matrix with $[e^{v_1}, e^{v_2},\dots]$ on the diagonal. The motivation for doing this is twofold:
+Observe that the model where $W$ is the identity matrix $\mathds{I}$ is equivalent to the original model. Furthermore, the regularisation term vanishes if and only if $W = \mathds{I}$. That is,
+$$
+f(\mathds{I}) = \frac{1}{2}\norm{\log h.(\hat{y}(\mathds{I}))}^2
+$$
+is the prediction error for the original model.
+For $W \ne \mathds{I}$, the regularisation term is strictly positive. This means that, if $f(W) \le f(\mathds{I})$, then the prediction error is decreased, i.e.,
+$$
+\frac{1}{2}\norm{\log h.(\hat{y}(W))}^2
+\le
+\frac{1}{2}\norm{\log h.(\hat{y}(\mathds{I}))}^2
+.$$
+Hence, the model corresponding to the minimum of \cref{eq: cost function regularised} predicts the data at least as accurately as the original model.
+
+To optimise $f$ numerically, we will parametrise $W$ in \cref{eq: cost function regularised} as $W = e^{\mathrm{diag}\, v}$ where $v = [v_1, v_2,\dots]$ is some vector and $e^{\mathrm{diag}\, v}$ is the diagonal matrix with $[e^{v_1}, e^{v_2},\dots]$ on the diagonal. The motivation for doing this is twofold:
 \begin{enumerate}
     \item It ensures that $W$ remains strictly positive. In particular, the diagonal elements of $W$ can only tend towards zero if $v_j \rightarrow -\infty$ for some $i$. 
     \item It implicitly measures changes to $W$ in a relative sense. If the optimisation algorithm performs a linear update $v_{k+1} = v_k + \Delta v$, this corresponds to a relative update $W_{k+1} = W_k e^{\mathrm{diag}\, \Delta v}$.
@@ -275,6 +288,7 @@ $$
 \quad\text{where}\quad 
 \hat{y} = M_{shift} e^{\mathrm{diag}\, v} \tilde{x}
 .$$
+
 Most optimisation algorithms require at least the gradient of $f$. This is given by the following:
 \begin{proposition}
     Let $g = [g_1, \dots, g_n]$ be the vector defined elementwise by 
