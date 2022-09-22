@@ -18,7 +18,7 @@
 \begin{itemize}
     \item Average emission per source: $x_1,\dots,x_m$ where $m = 200$.
     \item Measured concentrations $y_1,\dots,y_n$ where $n = 4636$. These are consecutive measurements for several measurement stations. 
-    \item $M_{i,(j,\Delta)}$ is a block in the sensitivity matrix $M$ that represents the contribution of $x_j$ from $\Delta - 1$ days ago to the observed concentration $y_i$.
+    \item $M_{i,(j,\Delta)}$ is a block in the sensitivity matrix $M$ that represents the contribution of $x_j$ from $\Delta$ days ago to the observed concentration $y_i$.
     \item Scaling factors $s_1,\dots,s_m$ (in \texttt{scalings.csv}). These are put in a diagonal matrix $S$.
     \item $\vb{1}_q = [1\,\, \dots\,\, 1]^T \in \mathbb{R}^q$ is the constant vector consisting of only ones.
     \item $\odot$ is the Hadamard (i.e.\, elementwise) product, given by $(AB)_{ij} = A_{ij} B_{ij}$.
@@ -72,7 +72,7 @@
         }_{\in \mathbb{R}^{pq}}
         .$$
         A standard rule of thumb in numerical linear algebra is that the Kronecker product serves a mostly theoretical purpose and is rarely calculated explicitly.
-        This is because the Kronecker product has the following convenient property \cite[Section 12.3]{Golub2013}: $\mathrm{vec} (AXB) = (B^T \otimes A) \mathrm{vec} X$ for all matrices $A,X,B$.
+        This is because the Kronecker product satisfies $\mathrm{vec} (AXB) = (B^T \otimes A) \mathrm{vec} X$ for all matrices $A,X,B$ \cite[eq. 1.3.6]{Golub2013}.
     \item For a vector-valued function $F(x)$, the Jacobian matrix is denoted as $\frac{\partial F}{\partial x}$.
 \end{itemize}
 
@@ -282,12 +282,16 @@ To optimise $f$ numerically, we will parametrise $W$ in \cref{eq: cost function 
 \end{enumerate}
 
 Thus, in practice, we are interested in the optimisation problem
-$$
-\min_{v} f(v) =
-\frac{1}{2}\norm{\log h.(\hat{y})}^2 + \frac{1}{2}\lambda \norm{v}^2
+\begin{equation}
+    \label{eq: cost function parameterised}
+\min_{v} f(v)
 \quad\text{where}\quad 
+f(v)
+=
+\frac{1}{2}\norm{\log h.(\hat{y})}^2 + \frac{1}{2}\lambda \norm{v}^2
+\quad\text{and}\quad 
 \hat{y} = M_{shift} e^{\mathrm{diag}\, v} \tilde{x}
-.$$
+.\end{equation}
 
 Most optimisation algorithms require at least the gradient of $f$. This is given by the following:
 \begin{proposition}
@@ -302,12 +306,11 @@ Most optimisation algorithms require at least the gradient of $f$. This is given
     where $e^v$ denotes elementwise exponentiation and $\odot$ is the Hadamard (elementwise) product.
 \end{proposition}
 \begin{proof}
-
-Let $U = \mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\, W(v) = U e^v$ where $e^v$ denotes elementwise exponentiation.
+Let $W = e^{\mathrm{diag}\, v}$ and let $U$ be the matrix corresponding to the linear map $\mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\, W(v) = U e^v$.
 Define $$
 F(v) := \log h.(\hat{y}(v))
 .$$
-Since 
+By using basic properties of the Kronecker product \cite[eq. 1.3.6]{Golub2013}, we have
 $$
 \hat{y}(v) = M_{shift} W(v) \tilde{x}
 =
@@ -315,42 +318,44 @@ $$
 =
 (\tilde{x}^T \otimes M_{shift}) U e^v
 ,$$
-we have
+so that
 $$
 \frac{\partial F}{\partial v}
 =
-\mathrm{diag}(d \log h.(\hat{y}(v))) \frac{\partial \hat{y}}{\partial v}
+\underbrace{\mathrm{diag}\left(
+    \left.\frac{\mathrm{d}}{\mathrm{d}x} \log h(x)\right\vert_{x = \hat{y}(v)}
+    \right)}_{:= H}
+\frac{\partial \hat{y}}{\partial v}
 =
-\underbrace{\mathrm{diag}(d \log h.(\hat{y}(v)))}_H U^T (\tilde{x} \otimes M_{shift}^T) e^{\mathrm{diag}\, v}
+H (\tilde{x}^T \otimes M_{shift}) U e^{\mathrm{diag}\, v}
+.$$
+The matrix $H$ appearing in this expression is defined by the diagonal elements 
+$$
+H_{ii} = \frac{1}{h(\hat{y}_i)}\left(\left.\frac{\mathrm{d}}{\mathrm{d}x} h(x)\right\vert_{x = \hat{y}_i} \right)
 .$$
 Using standard differentiation rules for the squared norm of a vector-valued function, we obtain
 \begin{align*}
-\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right) =
-\left(\frac{\partial F}{\partial v}\right)^T F(v)
-&= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes M_{shift}^T) H \log h.(\hat{y})
-\end{align*}
-Since $U$ is the unitary map that maps a vector onto (the vectorisation of) the corresponding diagonal matrix, $U^T$ maps the vectorisation of a matrix onto its diagonal. If $\mathrm{Diag}: \mathbb{R}^{p \times p} \rightarrow \mathbb{p}$ maps a matrix to its diagonal, we have 
-\begin{align*}
 \mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right)
 &=
-e^{\mathrm{diag}\, v} \mathrm{Diag}(M_{shift}^T H \log h.(\hat{y}) \tilde{x}^T) \\
-&=
-e^{\mathrm{diag}\, v} \left((M_{shift}^T H \log h.(\hat{y})) \odot \tilde{x}\right) \\
-&=
-e^{v} \odot \left(M_{shift}^T H \log h.(\hat{y})\right) \odot \tilde{x} \\
-&=
-e^v \odot (M_{shift}^T g(\hat{y})) \odot \tilde{x}
+\left(\frac{\partial F}{\partial v}\right)^T F(v) \\
+&= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes M_{shift}^T) H \log h.(\hat{y}) \\
+&= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes M_{shift}^T) g \\
+&= e^{\mathrm{diag}\, v} U^T \mathrm{vec}(M_{shift}^T g \tilde{x}^T)
 \end{align*}
-where $g$ is the elementwise application of $x \mapsto \log h(x) \frac{\mathrm{d}}{\mathrm{d}x}(\log h(x))$. Thus, 
+Since $U$ is the unitary map that maps a vector onto (the vectorisation of) the corresponding diagonal matrix, $U^T$ maps the vectorisation of a matrix onto its diagonal.
+Since the diagonal of the rank-1 matrix $M_{shift}^T g \tilde{x}^T$ is $(M_{shift}^T g) \odot \tilde{x}$, the above simplifies to
 $$
-g(\hat{y}_i) = \frac{\log h(\hat{y}_i)}{h(\hat{y}_i)} \frac{\mathrm{d}}{\mathrm{d}\hat{y}_i} h(\hat{y}_i)
-$$
+\mathrm{grad}_v\, \left(\frac{1}{2} \norm{F(v)}^2 \right)
+=
+e^{\mathrm{diag}\, v} \left( (M_{shift}^T g) \odot \tilde{x} \right) = e^{v} \odot (M_{shift}^T g) \odot \tilde{x}
+.$$
 
 
-The foregoing gives the derivative of the first term in $f(W)$. The gradient of the second term is simply $\lambda v$.
-
-
+The foregoing gives the derivative of the first term in the definition of $f(v)$. The gradient of the second term is simply $\lambda v$.
 \end{proof}
+
+With this information, we can optimise \cref{eq: cost function parameterised} using any gradient-based optimisation method. We decided on limited-memory BFGS \cite{Nocedal2006}, which is implimented in SciPy \cite{virtanen2020scipy}.
+
 
 
 \section{Further work}
