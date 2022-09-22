@@ -1,0 +1,4 @@
+Mean Bias: 0.2514101312486767
+Fractional Bias: -0.22333570215324533
+Geometric Mean Bias: 1.7664993068258636
+Data within factor 2: 0.40511386336396327

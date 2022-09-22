@@ -54,7 +54,6 @@ plt.hist(np.log10(y_corrected), bins=50)
 plt.xlabel("log10(y_corrected)")
 plt.legend()
 plt.title("Simulated observations lambda: "+str(cst.REG_LAMBDA))
-# plt.show()
 
 
 #compute the simulated non-detections after optimization
@@ -76,5 +75,18 @@ plt.title("Optimized weights lambda: "+str(cst.REG_LAMBDA))
 np.savetxt("x_optimized_lambda_"+str(cst.REG_LAMBDA)+".csv", default_x * resulting_W)
 np.savetxt("W_optimized_lambda_"+str(cst.REG_LAMBDA)+".csv", resulting_W)
 
+# metrics for the detections with optimized weights
+print("Mean Bias: ", analysis.MB(y_corrected))
+print("Fractional Bias: ", analysis.FB(y_corrected))
+print("Geometric Mean Bias: ", analysis.MG(y_corrected))
+print("Data within factor 2: ", analysis.FAC2(y_corrected))
+#also print metrics to file
+printstring = ""
+printstring += "Mean Bias: "+ str(analysis.MB(y_corrected)) + "\n"
+printstring += "Fractional Bias: "+ str(analysis.FB(y_corrected)) + "\n"
+printstring += "Geometric Mean Bias: "+ str(analysis.MG(y_corrected)) +"\n"
+printstring += "Data within factor 2: "+ str(analysis.FAC2(y_corrected)) +"\n"
+with open("metrics lambda="+str(cst.REG_LAMBDA)+".txt", "w") as writefile:
+    writefile.write(printstring)
 
 plt.show()
