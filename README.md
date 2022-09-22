@@ -6,7 +6,7 @@ python dependencies for computation:
 - pandas
 - numpy
 - scipy
-- 
+
 for visualizing the data:
 - shapely
 - geopandas
