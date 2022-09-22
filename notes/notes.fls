@@ -201,6 +201,7 @@ INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmrom
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-italic.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman10-bold.luc
 INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmroman7-italic.luc
+INPUT /home/nick/.texlive2019/texmf-var/luatex-cache/generic-dev/fonts/otl/lmromancaps10-regular.luc
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.aux
 INPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.run.xml
 OUTPUT /home/nick/be-maths-in/MathForIndustry2022SCK/notes/notes.run.xml
@@ -210,6 +211,7 @@ INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb
+INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
 INPUT /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb

@@ -19,6 +19,39 @@
 
 \refsection{0}
   \datalist[entry]{nty/global//global/global}
+    \entry{deMeutter2022uncertainty}{article}{}
+      \name{author}{2}{}{%
+        {{hash=6eb0da5ffa6ece49f243a2c90fcd662e}{%
+           family={De\bibnamedelima Meutter},
+           familyi={D\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Pieter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=34b80bc701d99d793e750da61c328549}{%
+           family={Delcloo},
+           familyi={D\bibinitperiod},
+           given={Andy\bibnamedelima W},
+           giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{450ff89069a81d8f26a1ab250a2f7997}
+      \strng{fullhash}{450ff89069a81d8f26a1ab250a2f7997}
+      \strng{bibnamehash}{450ff89069a81d8f26a1ab250a2f7997}
+      \strng{authorbibnamehash}{450ff89069a81d8f26a1ab250a2f7997}
+      \strng{authornamehash}{450ff89069a81d8f26a1ab250a2f7997}
+      \strng{authorfullhash}{450ff89069a81d8f26a1ab250a2f7997}
+      \field{sortinit}{D}
+      \field{sortinithash}{c438b3d5d027251ba63f5ed538d98af5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Environmental Radioactivity}
+      \field{title}{Uncertainty quantification of atmospheric transport and dispersion modelling using ensembles for CTBT verification applications}
+      \field{volume}{250}
+      \field{year}{2022}
+      \field{pages}{106918}
+      \range{pages}{1}
+    \endentry
     \entry{Golub2013}{book}{}
       \name{author}{2}{}{%
         {{hash=8b856da92ad549d323acc679ecf7f474}{%
@@ -51,6 +84,40 @@
       \field{title}{Matrix computations}
       \field{volume}{3}
       \field{year}{2013}
+    \endentry
+    \entry{Nocedal2006}{book}{}
+      \name{author}{2}{}{%
+        {{hash=88a342d927bf795b0d92af8a5613da31}{%
+           family={Nocedal},
+           familyi={N\bibinitperiod},
+           given={Jorge},
+           giveni={J\bibinitperiod}}}%
+        {{hash=c49efb16d3fa7eef002cc3620d42ab8a}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Stephen\bibnamedelima J.},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {New York}%
+      }
+      \list{publisher}{1}{%
+        {Springer New York}%
+      }
+      \strng{namehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{fullhash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{bibnamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authorbibnamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authornamehash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \strng{authorfullhash}{5b8fd28f6245ae8b0af119560622fa4f}
+      \field{sortinit}{N}
+      \field{sortinithash}{98cf339a479c0454fe09153a08675a15}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-0-387-30303-1}
+      \field{note}{Series Title: Springer Series in Operations Research and Financial Engineering Publication Title: Numerical Optimization}
+      \field{title}{Numerical {Optimization}}
+      \field{year}{2006}
     \endentry
   \enddatalist
 \endrefsection
