@@ -21,24 +21,26 @@
     \end{abstract}
 
 \section{Introduction}
-In this paper, we adapt a simulation model of radioxenon emissions used at SCK-CEN for the verification of the Nuclear-Test-Ban Treaty. This model operates on a map of $m = 200$ civilian sources of radioxenon with their average daily emissions $x_1,\dots,x_m$. A list of $n = 4636$ measurements $[y_1,\dots,y_n]$ at stations spread across the Northern Hemisphere is given. The relationship between the emissions and the measured concentrations is given by a linear model 
+The Comprehensive Nuclear Test Ban Treaty \cite{CTBT} bans all atmospheric, underwater and underground nuclear explosions when it enters into force. Compliance with the Treaty will be verified by the International Monitoring System to which SCK-CEN contributes as a National Data Centre. As part of the monitoring system, more than 300 measuring stations have been set up worldwide including seismic, hydro-acoustic, infrasound and radionuclide detectors. In this paper, we focus on the radionuclide detectors and in particular on measurements of radioactive xenon or \emph{radioxenon} concentrations. Monitoring of radioxenon concentrations is particularly useful for the detection of underground nuclear explosions, since radioxenon readily escapes the explosion zone owning to its properties as a noble gas. However, civilian sources such as medical isotope production facilities and nuclear power plants also emit radioactive xenon and this \emph{civilian background} complicates the detection of nuclear explosions.
+
+One approach under study at SCK-CEN explicitly models the \emph{xenon weather} using emission data from civilian sources and atmospheric transport modelling. If this approach can be used to accurately predict the civilian background, emissions caused by nuclear explosions can be separated from civilian sources. In this paper, we adapt the simulation model of radioxenon emissions and transport developped at SCK-CEN. This model operates on a map of $m = 200$ civilian sources of radioxenon with their average daily emissions $x_1,\dots,x_m$. A list of $n = 4636$ measurements $[y_1,\dots,y_n]$ at stations spread across the Northern Hemisphere is given. The relationship between the emissions and the measured concentrations is given by a linear model,  
 \begin{equation}
     \label{eq: initial model}
 y_i \approx
 \hat{y}_i = \sum_{j=1}^m \sum_{\Delta = 1}^{15}  M_{i,(j,\Delta)} \frac{x_{j}}{s_j}
 \end{equation}
-where the sensitivities $M_{i,(j, \Delta)}$ are obtained from backward simulation of the so-called \emph{xenon weather}. The scaling factors $s_j$ arise from the simulation on a mesh of the Northern Hemisphere.
-The \emph{sensitivity matrices} $M_{i,(j,\Delta)}$ can be interpreted as the contribution of the emission from source $j$ from $\Delta$ days before the measurement to the $i$'th concentration measurement in the dataset. The contributions of more than $15$ days before the measurement are neglected.
+where the sensitivities $M_{i,(j, \Delta)}$ are obtained from backward simulation of the atmospheric transport. The scaling factors $s_j$ arise from the simulation on a mesh of the Northern Hemisphere. In particular, they compensate for the fact that not all cells in the mesh have the same volume. 
+The \emph{sensitivity matrices} $M_{i,(j,\Delta)}$ can be interpreted as the contribution of the emission from source $j$ from $\Delta$ days before the measurement to the $i$'th concentration measurement in the dataset. The contributions of more than $15$ days before the measurement are neglected. A certain source will only contribute to the measurements that are relatively close to it, depending on the prevailing wind directions that facilitate atmospheric transport. Hence, many sensitivity matrices will contain zeros when there is no transport from the source to the measurement location.
 
 \subsection{Outline}
 The above assumes that the xenon emission is constant for every source. We adapt this model in \cref{sec: model} so that daily emissions are taken into account. In \cref{sec: nondetections}, we discuss the use of a transformation from \cite{deMeutter2022uncertainty} to model the accuracy in a non-detection event.
-In \cref{sec: optimisation}, we explain a method to fit the extended model to the data. Given the time constraints of this project, the optimality criterion was deliberately kept simple. Numerical data in \cref{sec: numerical results} show that the average prediction error can be increased. We conclude in \cref{sec: further work} with suggestions make the model more realistic and improve computational aspects.
+In \cref{sec: optimisation}, we explain a method to fit the extended model to the measured concentration data. Given the time constraints of this project, the optimality criterion was deliberately kept simple. Numerical data in \cref{sec: numerical results} show that the average prediction error can be decreased. We conclude in \cref{sec: further work} with suggestions to make the model more realistic and improve computational aspects.
 
 \subsection{Notation}
 \begin{itemize}
     \item $\vb{1}_q = [1\,\, \dots\,\, 1]^T \in \mathbb{R}^q$ is the constant vector consisting of only ones.
     \item $\odot$ is the Hadamard (i.e.\, elementwise) product, given by $(AB)_{ij} = A_{ij} B_{ij}$.
-    \item $\mathrm{vec}: \mathbb{R}^{p \times q} \rightarrow \mathbb{R}^{pq}$ is the vectorisation operator. It can be understood as stacking the columns of a matrix in one long vector. 
+    \item $\mathrm{vec}(\bullet): \mathbb{R}^{p \times q} \rightarrow \mathbb{R}^{pq}$ is the vectorisation operator. It can be understood as stacking the columns of a matrix in one long vector. 
     \item $\mathrm{diag}$ is the canonical identification of $p$-vectors and $p \times p$ diagonal matrices, i.e.,
     $$
     \mathrm{diag}\left(
@@ -88,7 +90,7 @@ In \cref{sec: optimisation}, we explain a method to fit the extended model to th
         }_{\in \mathbb{R}^{pq}}
         .$$
         A standard rule of thumb in numerical linear algebra is that the Kronecker product serves a mostly theoretical purpose and is rarely calculated explicitly.
-        This is because the Kronecker product satisfies $\mathrm{vec} (AXB) = (B^T \otimes A) \mathrm{vec} X$ for all matrices $A,X,B$ \cite[eq. 1.3.6]{Golub2013}.
+        This is because the Kronecker product satisfies $\mathrm{vec} \left(AXB\right) = \left(B^T \otimes A\right) \mathrm{vec}\left(X\right)$ for all matrices $A,X,B$ \cite[eq. 1.3.6]{Golub2013}.
     \item For a vector-valued function $F(x)$, the Jacobian matrix is denoted as $\frac{\partial F}{\partial x}$.
 \end{itemize}
 
@@ -149,7 +151,7 @@ $$
     \end{bmatrix}
     \tilde{x}
 .$$
-The presence of zeros in the matrix indicates that emissions from the distant past do not contribute to the observed concentrations.
+The presence of zeros in the matrix indicates that emissions from the distant past do not contribute to the observed concentrations. Furthermore, recall many of the sensitivity matrices themselves also contain zeros. Hence the larger matrix has a sparse nature.
 
 Assume for the sake of simplicity that in each station, there is one observation per day, indexed as $y_{k,t}$, where $k = 1,\dots,K$ where $K$ is the number of stations and $t = 1,\dots,365$. The index $t=1$ corresponds to the most recent measurement. Then the full system reads as follows:
 \begin{equation}
@@ -298,7 +300,7 @@ Most optimisation algorithms require at least the gradient of $f$. This is given
     where $e^v$ denotes elementwise exponentiation and $\odot$ is the Hadamard (elementwise) product.
 \end{proposition}
 \begin{proof}
-Let $W = e^{\mathrm{diag}\, v}$ and let $U$ be the matrix corresponding to the linear map $\mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\, W(v) = U e^v$.
+Let $W = e^{\mathrm{diag}\, v}$ and let $U$ be the matrix corresponding to the linear map $\mathrm{vec} \circ \mathrm{diag}$. Then $\mathrm{vec}\left(W(v)\right) = U e^v$.
 Define $$
 F(v) := \log h.(\hat{y}(v))
 .$$
@@ -306,7 +308,7 @@ By using basic properties of the Kronecker product \cite[eq. 1.3.6]{Golub2013}, 
 $$
 \hat{y}(v) = M_{shift} W(v) \tilde{x}
 =
-(\tilde{x}^T \otimes M_{shift}) \mathrm{vec} W(v)
+(\tilde{x}^T \otimes M_{shift}) \mathrm{vec} \left(W(v)\right)
 =
 (\tilde{x}^T \otimes M_{shift}) U e^v
 ,$$
@@ -332,7 +334,7 @@ Using standard differentiation rules for the squared norm of a vector-valued fun
 \left(\frac{\partial F}{\partial v}\right)^T F(v) \\
 &= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes M_{shift}^T) H \log h.(\hat{y}) \\
 &= e^{\mathrm{diag}\, v} U^T (\tilde{x} \otimes M_{shift}^T) g \\
-&= e^{\mathrm{diag}\, v} U^T \mathrm{vec}(M_{shift}^T g \tilde{x}^T)
+&= e^{\mathrm{diag}\, v} U^T \mathrm{vec}\left(M_{shift}^T g \tilde{x}^T\right)
 \end{align*}
 Since $U$ is the unitary map that maps a vector onto (the vectorisation of) the corresponding diagonal matrix, $U^T$ maps the vectorisation of a matrix onto its diagonal.
 Since the diagonal of the rank-1 matrix $M_{shift}^T g \tilde{x}^T$ is $(M_{shift}^T g) \odot \tilde{x}$, the above simplifies to
@@ -346,7 +348,7 @@ e^{\mathrm{diag}\, v} \left( (M_{shift}^T g) \odot \tilde{x} \right) = e^{v} \od
 The foregoing gives the derivative of the first term in the definition of $f(v)$. The gradient of the second term is simply $\lambda v$.
 \end{proof}
 
-With this information, we can optimise \cref{eq: cost function parameterised} using any gradient-based optimisation method. We decided on limited-memory BFGS \cite{Nocedal2006}, which is implimented in SciPy \cite{virtanen2020scipy}.
+With this information, we can optimise \cref{eq: cost function parameterised} using any gradient-based optimisation method. We decided on limited-memory BFGS \cite{Nocedal2006}, which is implemented in SciPy \cite{virtanen2020scipy}.
 
 \section{Numerical results}
 \label{sec: numerical results}
@@ -421,7 +423,7 @@ The previous metric only takes into account the simulated observations within a 
 	\end{minipage}
 \end{figure}
 
-Starting with the results when using a high regularization parameter $\lambda=10$, we observe that the weights are nearly $1$ everywhere (see \cref{fig: optimized weights lambda=10}). This makes sense, as the cost function in this case heavily penalizes the weights for deviating from $1$. As a result, the histogram of simulated results (see \cref{fig: simulated observations lambda=10}) is nearly identical to the baseline. Lowering the regularization parameter $\lambda=1$, we find that the weights have more freedom to deviate from $1$ (see \cref{fig: optimized weights lambda=1}) and the bias on the ratio $\hat{y}/y$ decreases (see \cref{fig: simulated observations lambda=1}). This is a direct result of lowering the influence of the regularization term. Finally, lowering the regularization parameter $\lambda=0.1$ even further, the weights get even more freedom (see \cref{fig: optimized weights lambda=0.1}), while the ratio $\hat{y}/y$ finally seems to be centered around $1$. In \cref{table: evaluated metrics}, a summary of the metrics is found, evaluated at the different values for the regularization parameter. Summarized, we see the most major change in the geometric mean bias GM as the regularization parameter decreases. This might lead us to believe that the best result is obtained by choosing $\lambda$ as small as possible. However, a small value for $\lambda$ results in larger deviations from the mean emission; these can become greater than can what be expected in real life TODO REF PAPER typical variation. Thus a fine balance between the prediction error and the regularization condition is still needed.\\
+Starting with the results when using a high regularization parameter $\lambda=10$, we observe that the weights are nearly $1$ everywhere (see \cref{fig: optimized weights lambda=10}). This makes sense, as the cost function in this case heavily penalizes the weights for deviating from $1$. As a result, the histogram of simulated results (see \cref{fig: simulated observations lambda=10}) is nearly identical to the baseline. Lowering the regularization parameter $\lambda=1$, we find that the weights have more freedom to deviate from $1$ (see \cref{fig: optimized weights lambda=1}) and the bias on the ratio $\hat{y}/y$ decreases (see \cref{fig: simulated observations lambda=1}). This is a direct result of lowering the influence of the regularization term. Finally, lowering the regularization parameter $\lambda=0.1$ even further, the weights get even more freedom (see \cref{fig: optimized weights lambda=0.1}), while the ratio $\hat{y}/y$ finally seems to be centered around $1$. In \cref{table: evaluated metrics}, a summary of the metrics is found, evaluated at the different values for the regularization parameter. Summarized, we see the most major change in the geometric mean bias GM as the regularization parameter decreases. This might lead us to believe that the best result is obtained by choosing $\lambda$ as small as possible. However, a small value for $\lambda$ results in larger deviations from the mean emission; these can become greater than can what be expected in real life typical variation \cite{Ringbom2021,DeMeutter2016}. Thus a fine balance between the prediction error and the regularization condition is still needed.\\
 
 \begin{table}
 	\centering
