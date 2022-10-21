@@ -425,6 +425,31 @@ The previous metric only takes into account the simulated observations within a 
 
 Starting with the results when using a high regularization parameter $\lambda=10$, we observe that the weights are nearly $1$ everywhere (see \cref{fig: optimized weights lambda=10}). This makes sense, as the cost function in this case heavily penalizes the weights for deviating from $1$. As a result, the histogram of simulated results (see \cref{fig: simulated observations lambda=10}) is nearly identical to the baseline. Lowering the regularization parameter $\lambda=1$, we find that the weights have more freedom to deviate from $1$ (see \cref{fig: optimized weights lambda=1}) and the bias on the ratio $\hat{y}/y$ decreases (see \cref{fig: simulated observations lambda=1}). This is a direct result of lowering the influence of the regularization term. Finally, lowering the regularization parameter $\lambda=0.1$ even further, the weights get even more freedom (see \cref{fig: optimized weights lambda=0.1}), while the ratio $\hat{y}/y$ finally seems to be centered around $1$. In \cref{table: evaluated metrics}, a summary of the metrics is found, evaluated at the different values for the regularization parameter. Summarized, we see the most major change in the geometric mean bias GM as the regularization parameter decreases. This might lead us to believe that the best result is obtained by choosing $\lambda$ as small as possible. However, a small value for $\lambda$ results in larger deviations from the mean emission; these can become greater than can what be expected in real life typical variation \cite{Ringbom2021,DeMeutter2016}. Thus a fine balance between the prediction error and the regularization condition is still needed.\\
 
+To grant some intuition about the time dependence of the variability of the optimized emissions, the time series of the weights are plotted for different values of the regularization parameter (see \cref{fig: optimized weights timeseries lambda=10}, \cref{fig: optimized weights timeseries lambda=1}, \cref{fig: optimized weights timeseries lambda=0.1}). At first glance, all time series look erratic. Looking at the measured emission data in \cite{Ringbom2021}, the data is seemingly also erratic. This can support the claim that our optimized emissions could be realistic, however proper time series analysis is still needed to extract firm conclusions. At the same time, we see that all time series for the optimized weights look similar (ignoring the scale differences). This can be expected, as all optimized solutions try to fit the same data but are hindered in different amounts by their respective regularization parameter.
+
+
+\begin{figure}
+	\centering
+	\begin{minipage}{.31\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{../plots/Optimized_weights_timeseries_lambda10.png}
+		\caption{Time series of the optimized weights $W$, using a large regularization parameter $\lambda=10$.}
+		\label{fig: optimized weights timeseries lambda=10}
+	\end{minipage}\hfill
+	\begin{minipage}{.31\textwidth}
+		\centering
+		\includegraphics[width=\linewidth]{../plots/Optimized_weights_timeseries_lambda1.png}
+		\caption{Time series of the optimized weights $W$, using a medium regularization parameter $\lambda=1$.}
+		\label{fig: optimized weights timeseries lambda=1}
+	\end{minipage}\hfill
+	\begin{minipage}{.31\textwidth}
+	\centering
+	\includegraphics[width=\linewidth]{../plots/Optimized_weights_timeseries_lambda01.png}
+	\caption{Time series of the optimized weights $W$, using a small regularization parameter $\lambda=0.1$.}
+	\label{fig: optimized weights timeseries lambda=0.1}
+	\end{minipage}
+\end{figure}
+
 \begin{table}
 	\centering
 	\caption{Metrics applied to the simulated observations in case of different regularization parameters $\lambda$.}\label{table: evaluated metrics}
