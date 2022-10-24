@@ -493,7 +493,20 @@ To grant some intuition about the time dependence of the variability of the opti
     \item Other numerical optimisation algorithms may be more efficient or have better convergence properties. For instance, the Gauss-Newton and Levenberg-Marquardt methods are specifically designed for optimising the squared norm of a vector-valued function, but may require a large amount of memory \cite[Section 10.3]{Nocedal2006}.
     
 \end{itemize}
+    
+\section{Anomaly detection}
+\begin{itemize}
 
+The main challenges of applying traditional anomaly detection methods, on time-series data of an observation station, is accommodating for weather. Winds will change which observation station an emission will end up in, therefore treating stations individually to try to learn their normal behavior would not lead to fruitful results. At the same time, it is also difficult to train more complex model that handles data collectively from all stations, since there is not enough historic data, and few observation stations are collecting data throughout the entire year.
+
+This is why working with the emission sources is more appealing. For the observation stations that are mostly operational during the year, correcting the emission data in the previous chapters allows us to obtain a better ground truth for observed emissions. The individual time-series data should show a few characteristics that arise from the nature of these sources:
+    \item For power plants, a long-term baseline variation corresponding to yearly electricity demand, which should vary consistently given that our readings are all in the northern hemisphere.
+    \item For medical isotope production facilities, a short term periodic trend corresponding to the working days of the week.
+    
+After adjusting for the yearly tend, the eventual solution should include two components. The first to segment the time-series into pieces with distinct behavior or features, for example using shapelets \cite{10.1145/2623330.2623613},\cite{10.1007/978-3-030-39098-3_7} or change point detection algorithms \cite{TRUONG2020107299}. The second is to train a 1D anomaly detection algorithm that considers these segments as normal behavior. The state of the art methods use convolution neural networks \cite{KIRANYAZ2021107398} or bayesian probabilistic models \cite{https://doi.org/10.48550/arxiv.1902.08627}. Finally, synthetic emission data should be simulated in order to evaluate these methods, since data for nuclear tests is rare if not inexistant.
+    
+\end{itemize}
+    
 \printbibliography
 
 \end{document}
