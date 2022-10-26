@@ -33,8 +33,9 @@ where the sensitivities $M_{i,(j, \Delta)}$ are obtained from backward simulatio
 The \emph{sensitivity matrices} $M_{i,(j,\Delta)}$ can be interpreted as the contribution of the emission from source $j$ from $\Delta$ days before the measurement to the $i$'th concentration measurement in the dataset. The contributions of more than $15$ days before the measurement are neglected. A certain source will only contribute to the measurements that are relatively close to it, depending on the prevailing wind directions that facilitate atmospheric transport. Hence, many sensitivity matrices will contain zeros when there is no transport from the source to the measurement location.
 
 \subsection{Outline}
-The above assumes that the xenon emission is constant for every source. We adapt this model in \cref{sec: model} so that daily emissions are taken into account. In \cref{sec: nondetections}, we discuss the use of a transformation from \cite{deMeutter2022uncertainty} to model the accuracy in a non-detection event.
-In \cref{sec: optimisation}, we explain a method to fit the extended model to the measured concentration data. Given the time constraints of this project, the optimality criterion was deliberately kept simple. Numerical data in \cref{sec: numerical results} show that the average prediction error can be decreased. We conclude in \cref{sec: further work} with suggestions to make the model more realistic and improve computational aspects.
+The model above assumes that the xenon emission is constant for every source. We adapt this model in \cref{sec: model} so that daily emissions are taken into account. In \cref{sec: nondetections}, we discuss the use of a transformation from \cite{deMeutter2022uncertainty} to model the accuracy in a non-detection event.
+In \cref{sec: optimisation}, we explain a method to fit the extended model to the measured concentration data. Given the time constraints of this project, the optimality criterion was deliberately kept simple. Numerical data in \cref{sec: numerical results} show that the average prediction error can be decreased. In \cref{sec:anomaly detection} we discuss how anomaly detection could be applied on the resulting time-corrected emissions.
+We conclude in \cref{sec: further work} with suggestions to make the model more realistic, and improve computational aspects.
 
 \subsection{Notation}
 \begin{itemize}
@@ -140,7 +141,7 @@ In \cref{sec: optimisation}, we explain a method to fit the extended model to th
 \nonumber
 \end{align}
 where $S = \mathrm{diag}([s_1,\dots,s_m])$.
-In this section, we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{T}$ where $T = 365 + 15 = 380$. This is a vector of length $mT$ that gives the emission from the most recent day to $T$ days in the past for each source. This is assumed to be constant for all days. Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is a constant vector of length $T$.
+In this section, we present a different interpretation. Instead of $S^{-1} x \otimes \vb{1}_{15}$, we make a vector $\tilde{x} := S^{-1} x \otimes \vb{1}_{T}$ where $T = 365 + 15 = 380$. This is a vector of length $mT$ that gives the emission from the most recent day to $T$ days in the past for each source. This is assumed to be constant for all days (for now). Therefore, $\tilde{x}$ consists of $m = 200$ blocks, each of which is a constant vector of length $T$.
 
 We can write a system of equations that is logically the same as \cref{eq: initial model concise} but uses $\tilde{x}$ instead of $S^{-1} x \otimes \vb{1}_{15}$. This gives a larger linear system. Because the emission from most dates has a negligible contribution to the observed concentrations, many coefficients in the larger matrix will be zero. For every measurement $i$, we have the linear relationship
 $$
@@ -179,11 +180,11 @@ Assume for the sake of simplicity that in each station, there is one observation
 .\end{equation}
 
 \begin{remark}
-    As an alternative to using $\tilde{x} = S^{-1} x \otimes \vb{1}_T$, one could use the permuted expression $\vb{1}_{T} \otimes (S^{-1} x)$. This is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. These permutations can be compensated by the inverse permutation on the columns and rows of $M_{shift}$, respectively. The resulting model is essentially identical to \cref{eq: initial model 365 days} but may have advantages when it comes to implementation in software. We will not consider this.
+    As an alternative to using $\tilde{x} = S^{-1} x \otimes \vb{1}_T$, one could use the permuted expression $\vb{1}_{T} \otimes (S^{-1} x)$. This is a vector containing all emissions on day 1, followed by all emissions on day 2, etc. A similar permutation of $y$ could be chosen. These permutations can be compensated by the inverse permutation on the columns and rows of $M_{shift}$, respectively. The resulting model is essentially identical to \cref{eq: initial model 365 days} but may have advantages when it comes to implementation in software (e.g. sparsity structure). We will not consider this.
 \end{remark}
 
 \subsection{Model with time-dependent correction to the emissions}
-Daily emissions can be modelled by multiplying the average emission of source $j$ by some scaling factor $w_{j,t}$. This corresponds to the 
+Daily emission variations can be modelled by multiplying the average emission of source $j$ by some scaling factor $w_{j,t}$. This corresponds to the 
 transformation
 $$
 \begin{bmatrix}
@@ -210,12 +211,12 @@ Using this weighted vector of emissions instead of $\tilde{x}$ in \cref{eq: init
     \label{eq: time-evolving model concise}
 \hat{y} = M_{shift} W \tilde{x}
 .\end{equation}
-In the next section, we present a method to fit the unknown factors $W$ to the data.
+In the next section, we present a method to fit the unknown factors $w_{j,t}$ to the data.
 
 \section{Correction for non-detections}
 \label{sec: nondetections}
 
-Sometimes, the concentration at a measurement station is below the minimum detectable concentration (MDC). The corresponding measurements are $y_i = 0$.
+Sometimes, the concentration at a measurement station is below the Minimum Detectable Concentration (MDC). The corresponding measurements are $y_i = 0$.
 To account for non-detections, we apply the transformation $h$ from \cite{deMeutter2022uncertainty}. This is given by the continuously differentiable function
 $$
 h(y) = \begin{cases}
@@ -244,7 +245,7 @@ $$
 .$$
 The average prediction error over all predictions is $\sum_{i=1}^n \log^2(h(\hat{y}_i)) = \norm{\log h.(\hat{y})}^2$, where $\log h.$ is the elementwise application of $x \mapsto \log h(x)$. This will be the first criterion for optimality of the model.
 
-The second criterion is the ratio between the daily emissions and the average emission for each source, i.e. the factors $W$. In a similar vein as the above, the size of $W$ can be measured as $\norm{\log W}^2$ where $\norm{\cdot}$ is the Frobenius norm\footnote{Since $W$ is a diagonal matrix, the matrix logarithm $\log W$ is simply the diagonal matrix with $\log w_{1,1}, \log w_{1,2}, \dots$ on the diagonal. Hence, $\norm{\log W}^2 = \log^2 w_{1,1} + \log^2 w_{1,2} + \dots$}. 
+The second criterion is the ratio between the daily emissions and the average emission for each source, i.e. the factors $W$. This will act as a regularisation term that keeps the daily emissions from varying wildly. In a similar vein as the above, the size of $W$ can be measured as $\norm{\log W}^2$ where $\norm{\cdot}$ is the Frobenius norm\footnote{Since $W$ is a diagonal matrix, the matrix logarithm $\log W$ is simply the diagonal matrix with $\log w_{1,1}, \log w_{1,2}, \dots$ on the diagonal. Hence, $\norm{\log W}^2 = \log^2 w_{1,1} + \log^2 w_{1,2} + \dots$}. 
 
 To balance these two criteria, we measure the quality of the model as 
 \begin{equation}
@@ -369,7 +370,7 @@ In order to quantify the performance of the simulations, we define some metrics.
 	\text{FAC2}:=P(0.5\leq\hat{y}/y\leq 2)
 \end{equation}
 
-The previous metric only takes into account the simulated observations within a small area. Therefore it cannot tell us whether some general bias is present. To investigate this, we use the geometric mean bias. The more biased the ratio is, the further this value will lie from $1$. This is because it defines some mean ratio of actual observations and simulated ones.
+The previous metric only takes into account the statistical spread of simulated observations within a small area. Therefore it cannot tell us whether some general bias is present. To investigate this, we use the geometric mean bias. The more biased the ratio is, the further this value will lie from $1$. This is because it defines some mean ratio of actual observations and simulated ones.
 %Nitpick Thomas: err, I did not actually check the formulae for the metrics closely during the week. It seems slightly weird taking the exponential, as we mostly care about the scalings (in log space). It might complicate the explanation: "needs to be close to 1 (in some logarithmic way)". Also, why do we have this minus sign in front?
 \begin{equation}
 	\text{GM}:=e^{-E(ln(\hat{y}/y))}
@@ -463,6 +464,18 @@ To grant some intuition about the time dependence of the variability of the opti
 \end{tabular}
 \end{table}
 
+\section{Anomaly detection}
+\label{sec:anomaly detection}
+One of the main challenges of applying traditional anomaly detection methods on the time-series data of an observation station, is accommodating for weather. Winds will change the course of an emission, causing different observation stations to pick up their signature. Therefore treating stations individually to try to learn their normal behavior would not lead to fruitful results. At the same time, it is also difficult to train more complex models that handle data collectively from all stations, since there is not enough historic data, and only a few observation stations are actively collecting data throughout the entire year.\\
+
+For these reasons, working with the emission sources directly is more appealing. Correcting the emission data in the previous chapters allows us to obtain a better ground truth for the variation of the emissions over the course of the year. The resulting individual time-series data should show a few characteristics that arise from the nature of these sources:
+\begin{itemize}
+	\item For power plants, a long-term baseline variation corresponding to yearly electricity demand, which should vary consistently given that our readings are all in the northern hemisphere.
+	\item For medical isotope production facilities, a short term periodic trend corresponding to the working days of the week.  
+\end{itemize}  
+
+After adjusting for the yearly trend, the eventual solution should include two components. The first which will segment the time-series into pieces with distinct behavior or features, for example using shapelets \cite{10.1145/2623330.2623613}\cite{10.1007/978-3-030-39098-3_7} or change point detection algorithms \cite{TRUONG2020107299}. The second part is to train anomaly detection models or classifiers, that distinguish between segments of normal and abnormal behavior. The state of the art methods use 1D convolution neural networks \cite{KIRANYAZ2021107398} or bayesian probabilistic models \cite{https://doi.org/10.48550/arxiv.1902.08627}. Finally, synthetic emission data should be simulated in order to evaluate these methods, since data for nuclear tests is rare if not inexistent.
+
 \section{Further work}
 \label{sec: further work}
 \begin{itemize}
@@ -493,21 +506,7 @@ To grant some intuition about the time dependence of the variability of the opti
     \item Other numerical optimisation algorithms may be more efficient or have better convergence properties. For instance, the Gauss-Newton and Levenberg-Marquardt methods are specifically designed for optimising the squared norm of a vector-valued function, but may require a large amount of memory \cite[Section 10.3]{Nocedal2006}.
     
 \end{itemize}
-    
-\section{Anomaly detection}
-
-
-One of the main challenges of applying traditional anomaly detection methods on the time-series data of an observation station, is accommodating for weather. Winds will change the course of an emission, causing different observation stations to pick up their signature. Therefore treating stations individually to try to learn their normal behavior would not lead to fruitful results. At the same time, it is also difficult to train more complex models that handle data collectively from all stations, since there is not enough historic data, and only a few observation stations are actively collecting data throughout the entire year.\\
-
-For these reasons, working with the emission sources directly is more appealing. Correcting the emission data in the previous chapters allows us to obtain a better ground truth for the variation of the emissions over the course of the year. The resulting individual time-series data should show a few characteristics that arise from the nature of these sources:
-\begin{itemize}
-    \item For power plants, a long-term baseline variation corresponding to yearly electricity demand, which should vary consistently given that our readings are all in the northern hemisphere.
-    \item For medical isotope production facilities, a short term periodic trend corresponding to the working days of the week.  
-\end{itemize}  
-
-After adjusting for the yearly trend, the eventual solution should include two components. The first which will segment the time-series into pieces with distinct behavior or features, for example using shapelets \cite{10.1145/2623330.2623613}\cite{10.1007/978-3-030-39098-3_7} or change point detection algorithms \cite{TRUONG2020107299}. The second part is to train anomaly detection models or classifiers, that distinguish between segments of normal and abnormal behavior. The state of the art methods use 1D convolution neural networks \cite{KIRANYAZ2021107398} or bayesian probabilistic models \cite{https://doi.org/10.48550/arxiv.1902.08627}. Finally, synthetic emission data should be simulated in order to evaluate these methods, since data for nuclear tests is rare if not inexistent.
-
-    
+        
 \printbibliography
 
 \end{document}
